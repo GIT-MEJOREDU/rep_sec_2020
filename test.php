@@ -4265,13 +4265,35 @@ chart_matricula_reten.draw(data_matricula_reten, options_matricula_reten);
 						<table class="max-width">
 							<tr>
 								<td rowspan="3" class="td_top left">¿Para qué sirve?</td>
-								<td class="td_just">La <strong>MEJOREDU</strong> concibe a la educación como un derecho de todos los niños, niñas, adolescentes y jóvenes que implica asegurarles el acceso, tránsito y permanencia a los centros escolares, así como un aprendizaje pertinente, significativo y relevante. La valoración de este aprendizaje está articulada en una relación en donde las evidencias de la evaluación sirvan a los centros escolares y a las autoridades educativas a generar orientaciones que permitan a los alumnos aprender más y mejor.<br/>
-Es por ello que con el propósito de ayudar a las escuelas a identificar <strong>las fortalezas y oportunidades respecto al aprendizaje de los estudiantes y generar orientaciones que promuevan y faciliten procesos de mejora a través de identificar sus necesidades, retos y avances en los logros alcanzados,</strong> se presenta este reporte escolar con información de la última aplicación de la prueba PLANEA. Este reporte se generó para todas las escuelas secundarias que participaron en la aplicación de la prueba en 2019 e integra información sistematizada de logro educativo de cada centro escolar, así como información más detallada sobre aquellos temas que los resultados sugieren que los alumnos no dominan por completo.<br/>
-<br/>
-<strong>Los resultados presentados en este reporte reflejan en forma confiable el logro que obtuvo el conjunto de los alumnos del último grado en cada secundaria, aun cuando en algunas escuelas sólo se aplicó a una muestra de sus estudiantes.</strong> Así mismo, los datos que se ofrecen deben verse como el resultado acumulado del proceso de aprendizaje de los estudiantes de la escuela a lo largo de los seis años de primaria y los tres de secundaria, pues reflejan el trabajo y esfuerzo de todo el equipo docente, además de las condiciones particulares de los estudiantes.
-<br/>
-<br/>
-En la lógica de la mejora continua, se espera que estos reportes sean uno de los múltiples apoyos que ayuden a los centros escolares a emprender procesos que propicien los ajustes o cambios que se requieren en la práctica para satisfacer sus necesidades, afrontar los retos y sostener o acrecentar los avances logrados en el aprendizaje de los alumnos. <strong>Se sugiere que, con base en esta información, en el conocimiento de las condiciones escolares y en el marco de una reflexión colectiva, el personal docente y directivo de cada escuela defina las acciones a seguir.</strong> Es importante considerar que, para fortalecer los aprendizajes y habilidades que se identifiquen como susceptibles de mejora, será necesario reforzar no sólo las acciones en el sexto grado, sino también en los grados previos en los que se aporten las bases académicas para alcanzar las que mide PLANEA.
+								<td class="td_just">
+								La <strong>MEJOREDU</strong> concibe a la educación como un derecho de todos los niños, niñas, adolescentes y 
+								jóvenes que implica asegurarles el acceso, tránsito y permanencia a los centros escolares, así como un aprendizaje 
+								pertinente, significativo y relevante. La valoración de este aprendizaje está articulada en una relación en donde 
+								las evidencias de la evaluación sirvan a los centros escolares y a las autoridades educativas a generar orientaciones 
+								que permitan a los alumnos aprender más y mejor.<br/>
+								Es por ello que con el propósito de ayudar a las escuelas a identificar 
+								<strong>las fortalezas y oportunidades respecto al aprendizaje de los estudiantes y generar orientaciones que 
+								promuevan y faciliten procesos de mejora a través de identificar sus necesidades, retos y avances en los logros 
+								alcanzados,</strong> se presenta este reporte escolar con información de la última aplicación de la prueba PLANEA. 
+								Este reporte se generó para todas las escuelas secundarias que participaron en la aplicación de la prueba en 2019 e 
+								integra información sistematizada de logro educativo de cada centro escolar, así como información más detallada 
+								sobre aquellos temas que los resultados sugieren que los alumnos no dominan por completo.<br/>
+								<br/>
+								<strong>Los resultados presentados en este reporte reflejan en forma confiable el logro que obtuvo el conjunto de 
+								los alumnos del último grado en cada secundaria, aun cuando en algunas escuelas sólo se aplicó a una muestra de sus 
+								estudiantes.</strong> Así mismo, los datos que se ofrecen deben verse como el resultado acumulado del proceso de 
+								aprendizaje de los estudiantes de la escuela a lo largo de los seis años de primaria y los tres de secundaria, pues 
+								reflejan el trabajo y esfuerzo de todo el equipo docente, además de las condiciones particulares de los estudiantes.
+								<br/>
+								<br/>
+								En la lógica de la mejora continua, se espera que estos reportes sean uno de los múltiples apoyos que ayuden a los 
+								centros escolares a emprender procesos que propicien los ajustes o cambios que se requieren en la práctica para 
+								satisfacer sus necesidades, afrontar los retos y sostener o acrecentar los avances logrados en el aprendizaje de los 
+								alumnos. <strong>Se sugiere que, con base en esta información, en el conocimiento de las condiciones escolares y en 
+								el marco de una reflexión colectiva, el personal docente y directivo de cada escuela defina las acciones a seguir.</strong> 
+								Es importante considerar que, para fortalecer los aprendizajes y habilidades que se identifiquen como susceptibles de 
+								mejora, será necesario reforzar no sólo las acciones en el sexto grado, sino también en los grados previos en los que 
+								se aporten las bases académicas para alcanzar las que mide PLANEA.
 								</td>
 							</tr>
 						</table>
@@ -4288,41 +4310,37 @@ En la lógica de la mejora continua, se espera que estos reportes sean uno de lo
 					<table class="max-width">
 						<tr>
 							<td rowspan="6" class="td_top left">¿Qué contiene?</th>
-							<td class="td_just"><strong>A.</strong> El <strong>porcentaje de alumnos en cada uno de los niveles de logro</strong>, tanto en Lenguaje y Comunicación como en Matemáticas en 2017.</th>
+							<td class="td_just"><strong>A. </strong> El <strong>porcentaje de alumnos en cada uno de los niveles de logro</strong>,
+							 tanto en Lenguaje y Comunicación como en Matemáticas en 2017 en las aplicaciones de Planea 2015, 2017 y 2019.</th>
 						</tr>
 							<tr>
 								<td class="td_just">
-								<strong>B.</strong> El <strong>comparativo de los resultados</strong> con escuelas similares, en la entidad, en el mismo subsistema y con el promedio de todas las escuelas del país.
+								<strong>B.</strong> El <strong>comparativo de los resultados de 2017 con los de 2015</strong> así como con los de escuelas 
+								similares, escuelas de su entidad y las escuelas de todo el país. Hay que tomar en cuenta que en algunas escuelas sólo 
+								se cuenta con información para 2017.
 							  </td>
 							</tr>
 							<tr>
 							  <td class="td_just">
-								<strong>C.</strong> Una <strong>comparación del puntaje promedio obtenido por el centro escolar con el promedio de todas las escuelas de su mismo subsistema en la entidad</strong>.
+								<strong>C.</strong> Una <strong>comparación del puntaje promedio obtenido por la escuela con el promedio de las escuelas 
+								de su misma zona escolar</strong>.
 							  </td>
 							</tr>
 							<tr>
 							  <td class="td_just">
-								<strong>D.</strong> Las <strong>prioridades de atención académica</strong>, con base en los reactivos en los que los estudiantes obtuvieron menor porcentaje de aciertos por cada eje temático, en los dos campos de conocimiento evaluados</strong>.
+								<strong>D.</strong> Las <strong>prioridades de atención académica</strong>, con base en los reactivos en los que los estudiantes 
+								obtuvieron menor porcentaje de aciertos por cada eje temático, en los dos campos de conocimiento evaluados</strong>.
 							  </td>
 							</tr>
 							<tr>
 							  <td class="td_just">
-								<strong>E.</strong> La información sobre el <strong>contexto y expectativas de los alumno y del entorno y clima escolar</strong> derivada del cuestionario que fue aplicado a los alumnos que participaron en la prueba.
-							  </td>
-							</tr>
-							<tr>
-							  <td class="td_just">
-									<strong>F.</strong> La <strong>información sobre docentes, grupos y alumnos</strong> por grado escolar, así como los porcentajes de aprobación y, de alumnos en edad idónea o un año más por encima de la idónea de la escuela , como una referencia general.
+								<strong>E.</strong> La <strong>información sobre el contexto escolar, docentes, grupos y alumnos</strong> por grado escolar, 
+								así como los porcentajes de aprobación y, de alumnos en edad idónea o un año más por encima de la idónea de la escuela, como 
+								una referencia general.
 							  </td>
 							</tr>
 						</table>
 			  		</div>		
-						<br/>
-						<div class="large_text">
-								<p class="large_text">
-											Usted podrá encontrar información complementaria, que incluye los resultados de su escuela en cada uno de los reactivos y las especificaciones técnicas de cada pregunta, en el portal del INEE (<a  href="http://www.inee.edu.mx">www.inee.edu.mx</a>). Sírvase hacernos llegar sus comentarios y sugerencias al correo <a href='mailto: apoyosupervisores@inee.edu.mx'>apoyosupervisores@inee.edu.mx</a>
-								</p>
-						</div>	
 
 	</div>
 		<!--Fin de página 1-->
