@@ -1,7 +1,7 @@
 <?php
 
 	function dbc(){
-		$con = pg_connect("host=192.168.2.3 port=5432 dbname=sire user=postgres password=psql&4n4l1s1s") or die('connection failed');
+		$con = pg_connect("host=192.168.2.3 port=5432 dbname=sire user=postgres password=*******") or die('connection failed');
 		return $con;
 	}
 	
