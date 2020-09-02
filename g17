@@ -1,0 +1,54 @@
+  var data = google.visualization.arrayToDataTable([
+	['Grado', '2015-2016',{role: 'annotation'}, '2016-2017',{role: 'annotation'}, '2017-2018',{role: 'annotation'}],
+	['1°', <?php echo $datos_escuela['MAT_PRIM_1516'];?>,<?php echo $datos_escuela['MAT_PRIM_1516'];?>,<?php echo $datos_escuela['MAT_PRIM_1617'];?>,<?php echo $datos_escuela['MAT_PRIM_1617'];?>,<?php echo $datos_escuela['MAT_PRIM_1718'];?>,<?php echo $datos_escuela['MAT_PRIM_1718'];?>],
+	['2°', <?php echo $datos_escuela['MAT_SEG_1516'];?>,<?php echo $datos_escuela['MAT_SEG_1516'];?>,<?php echo $datos_escuela['MAT_SEG_1617'];?>,<?php echo $datos_escuela['MAT_SEG_1617'];?>,<?php echo $datos_escuela['MAT_SEG_1718'];?>,<?php echo $datos_escuela['MAT_SEG_1718'];?>],
+	['3°', <?php echo $datos_escuela['MAT_TER_1516'];?>,<?php echo $datos_escuela['MAT_TER_1516'];?>,<?php echo $datos_escuela['MAT_TER_1617'];?>,<?php echo $datos_escuela['MAT_TER_1617'];?>,<?php echo $datos_escuela['MAT_TER_1718'];?>,<?php echo $datos_escuela['MAT_TER_1718'];?>],
+	['4°', <?php echo $datos_escuela['MAT_CUA_1516'];?>,<?php echo $datos_escuela['MAT_CUA_1516'];?>,<?php echo $datos_escuela['MAT_CUA_1617'];?>,<?php echo $datos_escuela['MAT_CUA_1617'];?>,<?php echo $datos_escuela['MAT_CUA_1718'];?>,<?php echo $datos_escuela['MAT_CUA_1718'];?>],
+	['5°', <?php echo $datos_escuela['MAT_QUI_1516'];?>,<?php echo $datos_escuela['MAT_QUI_1516'];?>,<?php echo $datos_escuela['MAT_QUI_1617'];?>,<?php echo $datos_escuela['MAT_QUI_1617'];?>,<?php echo $datos_escuela['MAT_QUI_1718'];?>,<?php echo $datos_escuela['MAT_QUI_1718'];?>],
+	['6°', <?php echo $datos_escuela['MAT_SEX_1516'];?>,<?php echo $datos_escuela['MAT_SEX_1516'];?>,<?php echo $datos_escuela['MAT_SEX_1617'];?>,<?php echo $datos_escuela['MAT_SEX_1617'];?>,<?php echo $datos_escuela['MAT_SEX_1718'];?>,<?php echo $datos_escuela['MAT_SEX_1718'];?>]
+  ]);
+
+  
+  
+  var options = {
+  	  tooltip: {
+  	  	trigger: 'none'
+	  },
+	  isStacked: false,
+	  height: 400,
+	  width: 900,
+	  legend: {position: 'bottom', maxLines: 3},
+	  vAxis: {
+		minValue: 0,
+	  },
+	  bar:{
+			groupWidth: '90%'
+		},
+	  //series:{
+	  //	  0:{
+	  //	  	  color: '#FF0000',
+    //	  },
+    //	  1:{
+	 // 	  	  color: '#FFFF00'
+    //	  },
+    //	  2:{
+	 // 	  	  color: '#00FF00'
+    //	  },
+    //	  3:{
+	 // 	  	  color: '#0000FF'
+    //	  }
+	 // },
+	  annotations:{
+	  	  textStyle: {
+	  	  	  fontSize: 10
+	  	  }
+	  }
+	  
+	};
+
+  var container = document.getElementById('alumn_por_grado');
+  var chart = new google.visualization.ColumnChart(container);
+  google.visualization.events.addListener(chart, 'ready', function () {
+        container.innerHTML = '<img src="' + chart.getImageURI() + '">';
+  });
+  chart.draw(data, options);
