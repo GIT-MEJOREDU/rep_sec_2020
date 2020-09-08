@@ -1227,6 +1227,33 @@ $res_matricula_reten = pg_query($db, $qw_matricula_reten);
 			font-weight: bold;
 		}
 		
+
+		.td_nvl{
+			width: 25%;
+			height: 45px;
+			text-align: center;
+			vertical-align: middle;
+			background-color: #FB4F57;
+			font-size: 12px;
+			font-weight: bold;
+		}
+
+		.td_bg_red{
+			background-color: #FB4F57;
+		}
+
+		.td_bg_yellow{
+			background-color: #FDD16C;
+		}
+
+		.td_bg_green{
+			background-color: #6ACB9C;
+		}
+
+		.td_bg_blue{
+			background-color: #90B0D9;
+		}
+
 		.td_left{
 		text-align: left;
 		}
@@ -1272,6 +1299,10 @@ $res_matricula_reten = pg_query($db, $qw_matricula_reten);
 		.container {
 			width: 100%;
     			text-align: center;
+		}
+		.left_container {
+			width: 100%;
+    		text-align: left;
 		}
 		.reac_container{
 			width: 100%;
@@ -1397,114 +1428,6 @@ function drawChart() {
 /*INICIO
 * Bloque para generar grafica del comparativo LyC con Matemáticas
 */
-
-	//se hace fetch sobre reesultados de LyC
-
-var data_LyC = google.visualization.arrayToDataTable([
-	['Nivel de logro','Nivel I', {role: 'annotation'}, 'Nivel II', {role: 'annotation'}, 'Nivel III', {role: 'annotation'}, 'Nivel IV', {role: 'annotation'}],
-				//['Lenguaje y Comunicacion', 4.55,'4.55%', 4.55,'4.55%', 45.45,'45.45%', 45.45,'45.45%']
-	<?php
-					while($row_LyC = pg_fetch_assoc($res_nl_LyC)){
-						if($row_LyC['I_Insuficiente']<0){$txtstyle_I="Dato no disponible"; $val_I=0;}else{$txtstyle_I=$row_LyC['I_Insuficiente']."%"; $val_I=$row_LyC['I_Insuficiente'];}
-						if($row_LyC['II_Elemental']<0){$txtstyle_II="Dato no disponible"; $val_II=0;}else{$txtstyle_II=$row_LyC['II_Elemental']."%"; $val_II=$row_LyC['II_Elemental'];}
-						if($row_LyC['III_Bueno']<0){$txtstyle_III="Dato no disponible"; $val_III=0;}else{$txtstyle_III=$row_LyC['III_Bueno']."%"; $val_III=$row_LyC['III_Bueno'];}
-						if($row_LyC['IV_Excelente']<0){$txtstyle_IV="Dato no disponible"; $val_IV=0;}else{$txtstyle_IV=$row_LyC['IV_Excelente']."%"; $val_IV=$row_LyC['IV_Excelente'];}
-						echo "['Lenguaje y Comunicación',".$val_I.",'".$txtstyle_I."',".$val_II.",'".$txtstyle_II."',".
-						$val_III.",'".$txtstyle_III."',".$val_IV.",'".$txtstyle_IV."'],";
-						//echo "['Lenguaje y Comunicación',".$row_LyC['I_Insuficiente'].",'".$row_LyC['I_Insuficiente']."%',".$row_LyC['II_Elemental'].",'".$row_LyC['II_Elemental']."%',".
-						//$row_LyC['III_Bueno'].",'".$row_LyC['III_Bueno']."%',".$row_LyC['IV_Excelente'].",'".$row_LyC['IV_Excelente']."%'],";
-					}
-					?>
-]);
-
-	//se hace fetch sobre reesultados de matemáticas
-
-  var data_Mat = google.visualization.arrayToDataTable([
-	['Nivel de logro','Nivel I', {role: 'annotation'}, 'Nivel II', {role: 'annotation'}, 'Nivel III', {role: 'annotation'}, 'Nivel IV', {role: 'annotation'}],
-<?php
-					while($row_Mat = pg_fetch_assoc($res_nl_Mat)){
-						if($row_Mat['I_Insuficiente']<0){$txtstyle_I="Dato no disponible"; $val_I=0;}else{$txtstyle_I=$row_Mat['I_Insuficiente']."%"; $val_I=$row_Mat['I_Insuficiente'];}
-						if($row_Mat['II_Elemental']<0){$txtstyle_II="Dato no disponible"; $val_II=0;}else{$txtstyle_II=$row_Mat['II_Elemental']."%"; $val_II=$row_Mat['II_Elemental'];}
-						if($row_Mat['III_Bueno']<0){$txtstyle_III="Dato no disponible"; $val_III=0;}else{$txtstyle_III=$row_Mat['III_Bueno']."%"; $val_III=$row_Mat['III_Bueno'];}
-						if($row_Mat['IV_Excelente']<0){$txtstyle_IV="Dato no disponible"; $val_IV=0;}else{$txtstyle_IV=$row_Mat['IV_Excelente']."%"; $val_IV=$row_Mat['IV_Excelente'];}
-						echo "['Matemáticas',".$val_I.",'".$txtstyle_I."',".$val_II.",'".$txtstyle_II."',".
-						$val_III.",'".$txtstyle_III."',".$val_IV.",'".$txtstyle_IV."'],";
-					}
-					?>
-]);
-
-  var options_fullStacked_LyC = {
-		tooltip: {trigger: 'none'},
-		//title: 'Resultados por niveles de logro en PLANEA 2017',
-isStacked: 'percent',
-height: 250,
-	  width: 200,
-		//title: 'Lenguaje y Comunicación',
-	  legend: {position: 'none', maxLines: 3},//legend: {position: 'none', maxLines: 3},
-vAxis: {
-    minValue: 0,
-    ticks: [0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1]},
-	  series:{
-	  0:{color: '#FB4F57',},
-  1:{color: '#FDD16C'},
-  2:{color: '#6ACB9C'},
-  3:{color: '#90B0D9'}},
-	chartArea: {
-	  top: 10,
-	  bottom: 20},
-	annotations:{
-	  textStyle: {fontSize: 10}
-	}
-	};
-
-  var options_fullStacked_Mat = {
-                tooltip: {trigger: 'none'},
-                //title: 'Resultados por niveles de logro en PLANEA 2017',
-isStacked: 'percent',
-height: 250,
-          width: 200,
-					//title: 'Matemáticas',
-          legend: {position: 'none', maxLines: 3},
-vAxis: {
-    minValue: 0,
-    ticks: [0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1]},
-          series:{
-          0:{color: '#FB4F57',},
-  1:{color: '#FDD16C'},
-  2:{color: '#6ACB9C'},
-  3:{color: '#90B0D9'}},
-        chartArea: {
-          top: 10,
-          bottom: 20},
-        annotations:{
-          textStyle: {fontSize: 10}
-        }
-        };
-
-
-		var container_LyC = document.getElementById('comp_planea_lyc');
-		var chart_LyC = new google.visualization.ColumnChart(container_LyC);
-		google.visualization.events.addListener(chart_LyC, 'ready', function () {
-			container_LyC.innerHTML = '<img src="' + chart_LyC.getImageURI() + '">';
-    });
-		chart_LyC.draw(data_LyC, options_fullStacked_LyC);
-
-		<?php if (pg_num_rows ( $res_nl_LyC ) == 0){ ?>
-			document.getElementById('comp_planea_lyc').style.display = "none";
-			//document.getElementById('manejo_const_txt').innerHTML = '<div style="margin-left: auto; margin-right: auto; height: 70; width: 900 ">Dato No Disponible</div>';
-		<?php } ?>
-
-		var container_Mat1 = document.getElementById('comp_planea_mat');
-		var chart_Mat = new google.visualization.ColumnChart(container_Mat1);
-		google.visualization.events.addListener(chart_Mat, 'ready', function () {
-			container_Mat1.innerHTML = '<img src="' + chart_Mat.getImageURI() + '">';
-    });
-		chart_Mat.draw(data_Mat, options_fullStacked_Mat);
-		
-		<?php if (pg_num_rows ( $res_nl_Mat ) == 0){ ?>
-			document.getElementById('comp_planea_mat').style.display = "none";
-			//document.getElementById('manejo_const_txt').innerHTML = '<div style="margin-left: auto; margin-right: auto; height: 70; width: 900 ">Dato No Disponible</div>';
-		<?php } ?>
 
 /*FIN
 * Bloque para generar grafica del comparativo LyC con Matemáticas
@@ -1651,8 +1574,8 @@ var options_comp = {
 	height: 350,
 	width: 350,
 	crosshair: {trigger: 'both', orientation: 'both', color: 'gray'},//crosshair: {trigger: 'selection', orientation: 'both', color: 'gray'},
-	vAxis: {gridlines: {color: 'transparent'}, title: 'Puntaje en Matemáticas'},
-	hAxis: {gridlines: {color: 'transparent'}, title: 'Puntaje en Lenguaje y Comunicación'}
+	vAxis: {gridlines: {color: 'transparent'}, title: '% de alumnos en nivel Insuficiente en MAT'},
+	hAxis: {gridlines: {color: 'transparent'}, title: '% de alumnos en nivel Insuficiente en LyC'}
 };
 
 // Instantiate and draw the chart.
@@ -4352,45 +4275,38 @@ chart_matricula_reten.draw(data_matricula_reten, options_matricula_reten);
 
 	<!--Inicio del encabezado de página-->	
 			<div class="header">
-						<img src="./imagenes/cabeceras/cabeza_<?php echo $arr_renapo[$row['cNombreEntidad']];?>.png" class="elem_center">
+				<img src="./imagenes/cabeceras/cabeza_00.png" class="elem_center">
 			</div>
 	<!--Fini del encabezado de página-->	
 			<div class="container">
-				<h4 class="section_tittle">Prioridades de atención académica</h4>
+				<h4 class="section_tittle">Resultados de la escuela por niveles de logro en Planea 2015, 2017 y 2019</h4>
 			</div>
+			<div class="left_container">
+			La prueba PLANEA valora el aprendizaje de los alumnos de 3ro de secundaria en Matemáticas y Lenguaje y comunicación y 
+			de acuerdo con el puntaje obtenido en cada materia, cada alumno es clasificado en cada uno de los cuatro niveles de dominio:
+			</div><br/>
 
-		<div class="first_graph_container">
-			<table>
+			<div class="container">
+				<table class="max-width">
 					<tr>
-							<td>
-								<div id="comp_planea_lyc"></div>
-							</td>
-							<td>
-								<div id="comp_planea_mat"></div>
-							</td>
+						<td class="td_nvl td_bg_red">I - Insuficiente</td>
+						<td class="td_nvl td_bg_yellow">II - Básico</td>
+						<td class="td_nvl td_bg_green">III - Satisfactorio</td>
+						<td class="td_nvl td_bg_blue">IV - Sobresaliente</td>
 					</tr>
-			</table>
-		</div>				
-			
-		<div class=" container bullet_container">
-			<span class="bullet_text"><img src="./imagenes/widgets/nivel4.png">&nbsp;Nivel IV Dominio sobresaliente</span>
-			<span class="bullet_text"><img src="./imagenes/widgets/nivel3.png">&nbsp;Nivel III Dominio satisfactorio</span>
-			<span class="bullet_text"><img src="./imagenes/widgets/nivel2.png">&nbsp;Nivel II Dominio básico</span>
-			<span class="bullet_text"><img src="./imagenes/widgets/nivel1.png">&nbsp;Nivel I Dominio insuficiente</span>
-		</div>
-		
-		
-		<div class="container">
-			<h4 class="section_tittle">Comparativo con escuelas promedio de la entidad y del país</h4>
-		</div>
+				</table>
+			</div><br/>
+
+			<div class="left_container">
+			A continuación, se presentan los resultados que obtuvo esta escuela en tres de las aplicaciones de Planea, incluyendo la de 2019.
+			</div>
 
 		<!--Separador de contenido-->
 			<div class="split">
 				<img src="http://analisis.websire.inee.edu.mx:9191/reporte_sec/imagenes/separador.png" style="width: 95%">
 			</div>
-		
+
 		<div>
-			<div>
             <table>
                 <tr>
                     <td>
@@ -4403,57 +4319,43 @@ chart_matricula_reten.draw(data_matricula_reten, options_matricula_reten);
                     </td>
                 </tr>
             </table>
-      </div>
-			
-				
-				<div class=" container bullet_container">
-							<span class="bullet_text"><img src="./imagenes/widgets/nivel4.png">&nbsp;Nivel IV Dominio sobresaliente</span>
-							<span class="bullet_text"><img src="./imagenes/widgets/nivel3.png">&nbsp;Nivel III Dominio satisfactorio</span>
-							<span class="bullet_text"><img src="./imagenes/widgets/nivel2.png">&nbsp;Nivel II Dominio básico</span>
-							<span class="bullet_text"><img src="./imagenes/widgets/nivel1.png">&nbsp;Nivel I Dominio insuficiente</span>
-				</div>
 		</div>
 		  
 	</div>		
 <!--Fin de página 2-->
 <div class="saltopagina"></div>
 
-
-
 <!--Inicio de página 3-->
 <div class="page_container">
 	<div class="header">
-			<img src="./imagenes/cabeceras/cabeza_<?php echo $arr_renapo[$row['cNombreEntidad']];?>.png" class="elem_center">
+			<img src="./imagenes/cabeceras/cabeza_00.png" class="elem_center" style="align:right">
 	</div>
 
 	<div class="container">
-				<h4 class="section_tittle">Comparativo con las escuelas de la entidad y del mismo subsistema</h4>
+				<h4 class="section_tittle">Porcentaje de aciertos en LENGUAJE Y COMUNICACIÓN por eje temático</h4>
 	</div>
 
 	<div class="split">
 					<img src="http://analisis.websire.inee.edu.mx:9191/reporte_sec/imagenes/separador.png" style="width: 95%">
 	</div>
-		
-		<div class="text">
-				<ul style="font-size:14px;vertical-align: top;">
-					<li>
-						La línea vertical dentro de la gráfica representa el promedio en lenguaje y comunicación de las escuelas del mismo subsistema.
-					</li>
-					<li>
-					  La línea horizontal dentro de la gráfica representa el promedio en matemáticas de las escuelas del mismo subsistema.
-					</li>
-					<li>
-					  La intersección de ambas líneas representa el promedio de las escuelas del mismo subsistema ambas asignaturas.
-					</li>
-				</ul>
-		</div>
+	<div class="left_container">
+		El hecho de que un estudiante se encuentre en el nivel insuficiente (o nivel I) es un indicio de que no tiene un dominio 
+		básico de los aprendizajes clave al término de la Educación Secundaria y por tanto no es deseable que en una escuela exista 
+		una alta proporción de estudiantes con este nivel de dominio mínimo.
+		La siguiente gráfica muestra el porcentaje de alumnos que obtuvieron el mínimo nivel de logro en Lenguaje y Comunicación y 
+		Matemáticas, de esta escuela y el resto de las que componen su zona escolar. El propósito no es compararse o medirse entre 
+		escuelas de una misma zona sino propiciar un intercambio de experiencias entre centros escolares, especialmente desde aquellas 
+		escuelas con mejores resultados y donde hay menores porcentajes de alumnos en nivel Insuficiente en ambas materias evaluadas y 
+		que la información sea útil para priorizar los esfuerzos que habrán de llevarse a cabo para asegurar que la cantidad de 
+		estudiantes que no tienen un dominio por lo menos básico de los aprendizajes esperados sea cada vez menor.
+	</div><br/>
 
 		<div>
 			<table>
 					<tr>
-							<td class="elem_center" style="text-align: center;">
+							<!--td class="elem_center" style="text-align: center;">
 								<img src="./imagenes/cuadrantes.png" style="width: 300px;height: 300px;">
-							</td>
+							</td-->
 							<td class="elem_center" style="text-align: center;">
 								<div id="cuadrantes"></div>
 							</td>
@@ -4461,11 +4363,29 @@ chart_matricula_reten.draw(data_matricula_reten, options_matricula_reten);
 			</table>
 		</div>				
 
-		<div class="container bullet_container">
-						<span class="bullet_text"><img src="./imagenes/widgets/mi_escuela.png">&nbsp;Mi escuela</span>
-						<span class="bullet_text"><img src="./imagenes/widgets/escuela_zona.png">&nbsp;Escuela del subsistema</span>
-						<span class="bullet_text"><img src="./imagenes/widgets/prom_estatal.png">&nbsp;Promedio estatal</span>
+		<div class="text">
+			<ul style="font-size:14px;vertical-align: top;">
+			<li>
+				<span><img src="./imagenes/widgets/mi_escuela.png">&nbsp;
+					<strong>Esta Escuela tiene menos de la mitad de los alumnos en nivel Insuficiente en Lenguaje y Comunicación (LyC) y 
+					Matemáticas (MAT)</strong>.
+				</span>
+			</li>
+			<li>
+				<span><img src="./imagenes/widgets/escuela_zona.png">&nbsp;
+					<strong>Escuelas en la zona escolar</strong>
+				</span>
+			</li>
+			</ul>
+		</div>
+		<div class="left_container">
+			En la zona escolar hay 5 escuelas que tienen más de 50% de sus alumnos en nivel Insuficiente en 
+			Lenguaje y Comunicación (LyC) y Matemáticas (MAT).<br/>
+			Tomando en cuenta el porcentaje de alumnos en nivel Insuficiente en ambas materias, esta escuela se 
+			encuentra entre el 30% de las escuelas con las menores proporciones de estudiantes en nivel 
+			Insuficiente en el estado.
 		</div>	
+
 		<div class="split">
 					<img src="http://analisis.websire.inee.edu.mx:9191/reporte_sec/imagenes/separador.png">
 	  </div>
