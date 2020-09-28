@@ -9,43 +9,8 @@
 		#si es válida la variable CCT
 		$escuela = substr($arrv['vent'],0,10);
 		$turno = substr($arrv['vent'],10,1);
-		$extension = substr($arrv['vent'],11);
+		#$extension = substr($arrv['vent'],11);
 		$cicloEscolar = 19;
-
-		$numPaginas = 11;
-
-		$arr_renapo = array('AGUASCALIENTES'=>'as',
-		'BAJA CALIFORNIA'=>'bc',
-		'BAJA CALIFORNIA SUR'=>'bs',
-		'CAMPECHE'=>'cc',
-		'COAHUILA DE ZARAGOZA'=>'cl',
-		'COLIMA'=>'cm',
-		'CHIAPAS'=>'cs',
-		'CHIHUAHUA'=>'ch',
-		'CIUDAD DE MEXICO'=>'df',
-		'DURANGO'=>'dg',
-		'GUANAJUATO'=>'gt',
-		'GUERRERO'=>'gr',
-		'HIDALGO'=>'hg',
-		'JALISCO'=>'jc',
-		'MEXICO'=>'mc',
-		'MICHOACAN DE OCAMPO'=>'mn',
-		'MORELOS'=>'ms',
-		'NAYARIT'=>'nt',
-		'NUEVO LEON'=>'nl',
-		'OAXACA'=>'oc',
-		'PUEBLA'=>'pl',
-		'QUERETARO'=>'qt',
-		'QUINTANA ROO'=>'qr',
-		'SAN LUIS POTOSI'=>'sp',
-		'SINALOA'=>'sl',
-		'SONORA'=>'sr',
-		'TABASCO'=>'tc',
-		'TAMAULIPAS'=>'ts',
-		'TLAXCALA'=>'tl',
-		'VERACRUZ DE IGNACIO DE LA LLAVE'=>'vz',
-		'YUCATAN'=>'yn',
-		'ZACATECAS'=>'zs');
 
 		#Se obtiene conexion a BD
 		$db = dbc();
@@ -53,213 +18,56 @@
 		#se obtienen datos generales de la escuela, para el encabezado
 		#consulta de datos generales
 		$qw = <<<EOD
-		SELECT ct."cNombreCentroTrabajo", ct."cClaveCentroTrabajo", te."cNombreTurnoEscolar", ex."cNombreExtensionEms", ex."iPkExtensionEms", pl."cClavePlantel", ss."cNombreSubsistemaEms", ef."cNombreEntidad", ef."iPkEntidadFederativa", ss."iPkSubsistemaEms"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."plantelesEms" AS pl ON pl."iPkPlantel" = h."iFkPlantel"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."subsistemasEms" AS ss ON ss."iPkSubsistemaEms" = h."iFkSubsistemaEms"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."entidadesFederativas" AS ef ON ef."iPkEntidadFederativa" =h."iFkEntidadFederativa"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar"='$cicloEscolar' AND ex."iPkExtensionEms"=$extension; 
+		SELECT ct."cNombreCentroTrabajo", te."cNombreTurnoEscolar", 
+		gm."cNombreGradoMarginacionPlanea", ef."cNombreEntidad",
+		m."cNombreMunicipio", ze."cClaveZonaEscolar"
+		FROM hechos."hechosReporteIneeSecundaria" AS h
+		FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+		FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+		FULL OUTER JOIN "dimensionesReporteSecundaria"."gradosMarginacionPlanea" AS gm ON gm."iPkGradoMarginacionPlanea" = h."iFkGradoMarginacionPlanea"
+		FULL OUTER JOIN "dimensionesReporteSecundaria"."entidadesFederativas" AS ef ON ef."iPkEntidadFederativa" = h."iFkEntidadFederativa"
+		FULL OUTER JOIN "dimensionesReporteSecundaria".municipios AS m ON m."iPkMunicipio"=h."iFkMunicipio"
+		FULL OUTER JOIN "dimensionesReporteSecundaria"."zonasEscolares" AS ze ON ze."iPkZonaEscolar" = h."iFkZonaEscolar"
+		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"= '$turno' AND h."iFkCicloEscolar"= '$cicloEscolar'
 EOD;
 
 	$res = pg_query($db, $qw);
 	#Se asignan valores de datos generales de la escuela, para mostrarlas en encabezado del reporte
 	$row = pg_fetch_assoc($res);
 	$nom_cct = $row['cNombreCentroTrabajo'];
-	$cve_cct = $row['cClaveCentroTrabajo'];
+	$cve_cct = $escuela;
+	$gdo_marginacion = $row['cNombreGradoMarginacionPlanea'];
 	$nom_turno = $row['cNombreTurnoEscolar'];
-	$nom_ext = $row['cNombreExtensionEms'];
-	$iPk_ext = $row['iPkExtensionEms'];
-	$cve_plantel = $row['cClavePlantel'];
-	$nom_subsistema = $row['cNombreSubsistemaEms'];
 	$nom_entidad = $row['cNombreEntidad'];
-	$nom_mun = "MUNICIPIO AAAAAAA AAAAA";
-	$nivel = "NIVEL AAAAA AAAA";
-	$zona = "ZONA ABC-999-1234";
-	$iPk_entidad = $row['iPkEntidadFederativa'];
-	$iPk_subs = $row['iPkSubsistemaEms'];
+	$nom_mun = $row['cNombreMunicipio'];
+	$cve_zona_e = $row['cClaveZonaEscolar'];
+	$ciclo1 = 17;
+	$ciclo2 = 19;
 
-
-		#Consulta de nivel de logro LyC para el comparativo con Matematicas
-		$qw_nivel_logro_LyC = <<<EOD
-		SELECT ce."cCicloEscolar" AS "CicloEscolar", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrILyC"   = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrILyC" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIILyC"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIILyC" AS NUMERIC (5,2))  END AS "II_Elemental", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIIILyC" = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIIILyC" AS NUMERIC (5,2)) END AS "III_Bueno", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIVLyC"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIVLyC" AS NUMERIC (5,2))  END AS "IV_Excelente"
-			FROM hechos."hechosReporteEmsInee" AS h
-			FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo"  AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-			FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-			FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-			FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"																																  
-			WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-			AND h."dPorcentAlumnsEscNvlLgrILyC"   >= 0;
-EOD;
-	$res_nl_LyC = pg_query($db, $qw_nivel_logro_LyC);
-
-		#Consulta de nivel de logro Mat, para el comparativo con LyC
-		$qw_nivel_logro_Mat = <<<EOD
-		SELECT  ce."cCicloEscolar" AS "CicloEscolar", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIMat"   = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIMat" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIIMat"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIIMat" AS NUMERIC (5,2))  END AS "II_Elemental", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIIIMat" = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIIIMat" AS NUMERIC (5,2)) END AS "III_Bueno", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIVMat"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIVMat" AS NUMERIC (5,2))  END AS "IV_Excelente"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo"  AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-		AND h."dPorcentAlumnsEscNvlLgrIMat"   >= 0;
-EOD;
-
-	$res_nl_Mat = pg_query($db, $qw_nivel_logro_Mat);
-
-#Consulta de Comparativo con escuelas promedio de la entidad y del país Lenguaje y Comunicacion
+#Consulta comparativo ciclos de PLANEA Lenguaje y Comunicacion
 $qw_compara_LyC = <<<EOD
-SELECT nTable.Resultado, nTable."I_Insuficiente", nTable."II_Elemental", nTable."III_Bueno",nTable."IV_Excelente" 
-FROM  
-(
-		SELECT 'Nacional' AS Resultado,  
-			CASE WHEN h."dPrctjAlmsTdsEscMxNvlLgrILyC"   = -9999 THEN -0.01 ELSE CAST(h."dPrctjAlmsTdsEscMxNvlLgrILyC" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPrctjAlmsTdsEscMxNvlLgrIILyC"  = -9999 THEN -0.01 ELSE CAST(h."dPrctjAlmsTdsEscMxNvlLgrIILyC" AS NUMERIC (5,2))  END AS "II_Elemental",
-			CASE WHEN h."dPrctjAlmsTdsEscMxNvlLgrIIILyC" = -9999 THEN -0.01 ELSE CAST(h."dPrctjAlmsTdsEscMxNvlLgrIIILyC" AS NUMERIC (5,2)) END AS "III_Bueno",
-			CASE WHEN h."dPrctjAlmsTdsEscMxNvlLgrIVLyC"  = -9999 THEN -0.01 ELSE CAST(h."dPrctjAlmsTdsEscMxNvlLgrIVLyC" AS NUMERIC (5,2))  END AS "IV_Excelente"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo"  AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-
-		UNION
-		SELECT 'Estatal' AS Resultado,  
-			CASE WHEN h."dPrctjAlmsTdsEscEstNvlLgrILyC"   = -9999 THEN -0.01 ELSE CAST(h."dPrctjAlmsTdsEscEstNvlLgrILyC" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPrctjAlmsTdsEscEstNvlLgrIILyC"  = -9999 THEN -0.01 ELSE CAST(h."dPrctjAlmsTdsEscEstNvlLgrIILyC" AS NUMERIC (5,2))  END AS "II_Elemental",
-			CASE WHEN h."dPrctjAlmsTdsEscEstNvlLgrIIILyC" = -9999 THEN -0.01 ELSE CAST(h."dPrctjAlmsTdsEscEstNvlLgrIIILyC" AS NUMERIC (5,2)) END AS "III_Bueno",
-			CASE WHEN h."dPrctjAlmsTdsEscEstNvlLgrIVLyC"  = -9999 THEN -0.01 ELSE CAST(h."dPrctjAlmsTdsEscEstNvlLgrIVLyC" AS NUMERIC (5,2))  END AS "IV_Excelente"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-
-		UNION
-		SELECT ct."cEscuelaParecida" AS Resultado,  
-			CASE WHEN h."dPorcentAlmsEscParNvlLgrILyC"   = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlmsEscParNvlLgrILyC" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPorcentAlmsEscParNvlLgrIILyC"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlmsEscParNvlLgrIILyC" AS NUMERIC (5,2))  END AS "II_Elemental",
-			CASE WHEN h."dPorcentAlmsEscParNvlLgrIIILyC" = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlmsEscParNvlLgrIIILyC" AS NUMERIC (5,2)) END AS "III_Bueno",
-			CASE WHEN h."dPorcentAlmsEscParNvlLgrIVLyC"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlmsEscParNvlLgrIVLyC" AS NUMERIC (5,2))  END AS "IV_Excelente"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-		
-		UNION
-		SELECT 'Escuela' AS Resultado,  
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrILyC"   = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrILyC" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIILyC"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIILyC" AS NUMERIC (5,2))  END AS "II_Elemental",
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIIILyC" = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIIILyC" AS NUMERIC (5,2)) END AS "III_Bueno",
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIVLyC"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIVLyC" AS NUMERIC (5,2))  END AS "IV_Excelente"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-		ORDER BY Resultado ) as nTable
-WHERE 	"I_Insuficiente" is not null
-	OR  "II_Elemental"	is not null
-	OR	"III_Bueno"		is not null
-	OR "IV_Excelente"	is not null	;
+	SELECT ce."cCicloEscolar" AS "CicloEscolar", CAST(h."dPorcentAlumnsEscNvlLgrILyC" AS NUMERIC (5,2)) AS "I_Insuficiente", CAST(h."dPorcentAlumnsEscNvlLgrIILyC" AS NUMERIC (5,2)) AS "II_Elemental", CAST(h."dPorcentAlumnsEscNvlLgrIIILyC" AS NUMERIC (5,2)) AS "III_Bueno", CAST(h."dPorcentAlumnsEscNvlLgrIVLyC" AS NUMERIC (5,2)) AS "IV_Excelente"
+	FROM hechos."hechosReporteIneeSecundaria" AS h
+	FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+	FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+	FULL OUTER JOIN "dimensionesReporteSecundaria"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
+	WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"= '$turno' AND h."iFkCicloEscolar" IN (17,19);
 EOD;
-
 $res_compara_LyC = pg_query($db, $qw_compara_LyC);
 
-#Consulta de Comparativo con escuelas promedio de la entidad y del país Matemáticas
+#Consulta comparativo ciclos de PLANEA Matemáticas
 $qw_compara_mat = <<<EOD
-SELECT nTable.Resultado, nTable."I_Insuficiente", nTable."II_Elemental", nTable."III_Bueno",nTable."IV_Excelente" 
-FROM  
-(
-	SELECT 'Nacional' AS Resultado, 
-			CASE WHEN h."dPctjAlmsTdsEscMxNvlLgrIMat"   = -9999 THEN -0.01 ELSE CAST(h."dPctjAlmsTdsEscMxNvlLgrIMat" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPctjAlmsTdsEscMxNvlLgrIIMat"  = -9999 THEN -0.01 ELSE CAST(h."dPctjAlmsTdsEscMxNvlLgrIIMat" AS NUMERIC (5,2))  END AS "II_Elemental",
-			CASE WHEN h."dPctjAlmsTdsEscMxNvlLgrIIIMat" = -9999 THEN -0.01 ELSE CAST(h."dPctjAlmsTdsEscMxNvlLgrIIIMat" AS NUMERIC (5,2)) END AS "III_Bueno",
-			CASE WHEN h."dPctjAlmsTdsEscMxNvlLgrIVMat"  = -9999 THEN -0.01 ELSE CAST(h."dPctjAlmsTdsEscMxNvlLgrIVMat" AS NUMERIC (5,2))  END AS "IV_Excelente"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-		UNION
-																																  
-		SELECT 'Estatal' AS Resultado,
-			CASE WHEN h."dPctjAlmsTdsEscEstNvlLgrIMat"   = -9999 THEN -0.01 ELSE CAST(h."dPctjAlmsTdsEscEstNvlLgrIMat" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPctjAlmsTdsEscEstNvlLgrIIMat"  = -9999 THEN -0.01 ELSE CAST(h."dPctjAlmsTdsEscEstNvlLgrIIMat" AS NUMERIC (5,2))  END AS "II_Elemental",
-			CASE WHEN h."dPctjAlmsTdsEscEstNvlLgrIIIMat" = -9999 THEN -0.01 ELSE CAST(h."dPctjAlmsTdsEscEstNvlLgrIIIMat" AS NUMERIC (5,2)) END AS "III_Bueno",
-			CASE WHEN h."dPctjAlmsTdsEscEstNvlLgrIVMat"  = -9999 THEN -0.01 ELSE CAST(h."dPctjAlmsTdsEscEstNvlLgrIVMat" AS NUMERIC (5,2))  END AS "IV_Excelente"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-																																
-		UNION
-		SELECT ct."cEscuelaParecida" AS Resultado,
-			CASE WHEN h."dPorcentAlmsEscParNvlLgrIMat"   = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlmsEscParNvlLgrIMat" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPorcentAlmsEscParNvlLgrIIMat"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlmsEscParNvlLgrIIMat" AS NUMERIC (5,2))  END AS "II_Elemental",
-			CASE WHEN h."dPorcentAlmsEscParNvlLgrIIIMat" = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlmsEscParNvlLgrIIIMat" AS NUMERIC (5,2)) END AS "III_Bueno",
-			CASE WHEN h."dPorcentAlmsEscParNvlLgrIVMat"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlmsEscParNvlLgrIVMat" AS NUMERIC (5,2))  END AS "IV_Excelente"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-		UNION
-																																	
-		SELECT 'Escuela' AS Resultado,
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIMat"   = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIMat" AS NUMERIC (5,2))   END AS "I_Insuficiente", 
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIIMat"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIIMat" AS NUMERIC (5,2))  END AS "II_Elemental",
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIIIMat" = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIIIMat" AS NUMERIC (5,2)) END AS "III_Bueno",
-			CASE WHEN h."dPorcentAlumnsEscNvlLgrIVMat"  = -9999 THEN -0.01 ELSE CAST(h."dPorcentAlumnsEscNvlLgrIVMat" AS NUMERIC (5,2))  END AS "IV_Excelente"
-		FROM hechos."hechosReporteEmsInee" AS h
-		FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-		FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN ('$cicloEscolar') AND ex."iPkExtensionEms" = '$iPk_ext'
-		ORDER BY Resultado ) as nTable
-WHERE 	"I_Insuficiente" is not null
-	OR  "II_Elemental" is not null
-	OR	"III_Bueno" is not null
-	OR "IV_Excelente"is not null;
+	SELECT  ce."cCicloEscolar" AS "CicloEscolar", CAST(h."dPorcentAlumnsEscNvlLgrIMat" AS NUMERIC (5,2)) AS "I_Insuficiente", CAST(h."dPorcentAlumnsEscNvlLgrIIMat" AS NUMERIC (5,2)) AS "II_Elemental", CAST(h."dPorcentAlumnsEscNvlLgrIIIMat" AS NUMERIC (5,2)) AS "III_Bueno", CAST(h."dPorcentAlumnsEscNvlLgrIVMat" AS NUMERIC (5,2)) AS "IV_Excelente"
+	FROM hechos."hechosReporteIneeSecundaria" AS h
+	FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+	FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+	FULL OUTER JOIN "dimensionesReporteSecundaria"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
+	WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" IN (17,19)
 EOD;
-
 $res_compara_mat = pg_query($db, $qw_compara_mat);
 
-#Consulta de Comparativo con las escuelas de la entidad y el mismo subsistema
 
-#---- Limite min y max de lengua y comunicación ----
-$qw_limits_lyc = <<<EOD
-SELECT  CASE WHEN h."dPuntajePromedioMinimoGpoCompLyC"  = -9999 THEN -0.01 ELSE "dPuntajePromedioMinimoGpoCompLyC" END AS "dPuntajePromedioMinimoGpoCompLyC" ,
-CASE WHEN h."dPuntajePromedioMaximoGpoCompLyC"  = -9999 THEN -0.01 ELSE "dPuntajePromedioMaximoGpoCompLyC" END AS "dPuntajePromedioMaximoGpoCompLyC" 
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms".agrupadores AS agru ON agru."iPkAgrupador" =h."iFkAgrupador"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar';
-EOD;
-$res_limits_lyc = pg_query($db, $qw_limits_lyc);
+#Consulta de Comparativo con las escuelas de la entidad y el mismo subsistema
 
 #---- Escuela promedio en el mismo subsistema ----
 $qw_prom_subs = <<<EOD
@@ -271,7 +79,7 @@ FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEs
 FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
 FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
 FULL OUTER JOIN "dimensionesPlaneaEms".agrupadores AS agru ON agru."iPkAgrupador" =h."iFkAgrupador"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar';
+WHERE ct."cClaveCentroTrabajo"='01PBH3291R' AND te."iPkTurnoEscolar"='1' AND ex."iPkExtensionEms"='399' AND h."iFkCicloEscolar"='19';
 EOD;
 $res_prom_subs = pg_query($db, $qw_prom_subs);
 
@@ -285,7 +93,7 @@ FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEs
 FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
 FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
 FULL OUTER JOIN "dimensionesPlaneaEms".agrupadores AS agru ON agru."iPkAgrupador" =h."iFkAgrupador"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar';
+WHERE ct."cClaveCentroTrabajo"='01PBH3291R' AND te."iPkTurnoEscolar"='1' AND ex."iPkExtensionEms"='399' AND h."iFkCicloEscolar"='19';
 EOD;
 $res_escuela_subs = pg_query($db, $qw_escuela_subs);
 
@@ -302,10 +110,10 @@ FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEs
 FULL OUTER JOIN "dimensionesPlaneaEms".agrupadores AS agru ON agru."iPkAgrupador" = h."iFkAgrupador"
 FULL OUTER JOIN hechos."hechosReporteEmsInee" AS hh ON h."iFkAgrupador" = hh."iFkAgrupador"
 WHERE hh."iFkCentroTrabajo" <> h."iFkCentroTrabajo"
-	AND ct."cClaveCentroTrabajo"='$escuela'
-	AND te."iPkTurnoEscolar"='$turno'
-	AND ex."iPkExtensionEms"='$iPk_ext'
-	AND h."iFkCicloEscolar"='$cicloEscolar'
+	AND ct."cClaveCentroTrabajo"='01PBH3291R'
+	AND te."iPkTurnoEscolar"='1'
+	AND ex."iPkExtensionEms"='399'
+	AND h."iFkCicloEscolar"='19'
 ORDER BY hh."dPuntajePromedioEscLyC",hh."dPuntajePromedioEscMat";	
 EOD;
 $res_ent_subs = pg_query($db, $qw_ent_subs);
@@ -320,7 +128,7 @@ FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEs
 FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
 FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
 FULL OUTER JOIN "dimensionesPlaneaEms".agrupadores AS agru ON agru."iPkAgrupador" =h."iFkAgrupador"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar';
+WHERE ct."cClaveCentroTrabajo"='01PBH3291R' AND te."iPkTurnoEscolar"='1' AND ex."iPkExtensionEms"='399' AND h."iFkCicloEscolar"='19';
 EOD;
 $res_ent_prom = pg_query($db, $qw_ent_prom);
 
@@ -335,7 +143,7 @@ FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEs
 FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
 FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
 FULL OUTER JOIN "dimensionesPlaneaEms"."cuadrantesEscuela" AS cu ON cu."iPkCuadranteEscuela" = h."iFkCuadranteEscuela"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar'
+WHERE ct."cClaveCentroTrabajo"='01PBH3291R' AND te."iPkTurnoEscolar"='1' AND ex."iPkExtensionEms"='399' AND h."iFkCicloEscolar"='19'
 ORDER BY ct."cClaveCentroTrabajo";
 EOD;
 $res_ent_texto = pg_query($db, $qw_ent_texto);
@@ -362,146 +170,66 @@ $txt_4 = trim(substr ($txt3_4 , $pos1+2));
 
 #---- Aspecto de evaluación: Manejo y construcción de la información ----
 //Manejo y construcción de textos
+$evaluacion = "Comprensión lectora";
 $qw_manejo_txts = <<<EOD
-SELECT rlc."cAspectoEvaluacion", CASE WHEN h."dPorcentajeAspecto1LyC" = -9999 THEN -0.01 ELSE h."dPorcentajeAspecto1LyC" END  AS "dPorcentajeAspecto1LyC"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" = '$iPk_ext' AND rlc."cAspectoEvaluacion" = 'Manejo y construcción de la información' AND h."iFkCicloEscolar" = '$cicloEscolar'
-AND h."dPorcentajeAspecto1LyC" >= 0
-GROUP BY rlc."cAspectoEvaluacion",  CASE WHEN h."dPorcentajeAspecto1LyC" = -9999 THEN -0.01 ELSE h."dPorcentajeAspecto1LyC" END
-ORDER BY rlc."cAspectoEvaluacion";
+SELECT rlc."cUnidadEvaluacion", CAST(SUM(rlc."dPorcentsAlumnsAcertReactivo")/COUNT(rlc."dPorcentsAlumnsAcertReactivo") AS NUMERIC (5,2)) AS "porcentaje"
+FROM hechos."hechosReporteIneeSecundaria" AS h
+FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
+WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" = '$cicloEscolar'
+AND rlc."cUnidadEvaluacion" = 'Reflexión sobre la lengua'
+GROUP BY rlc."cUnidadEvaluacion";
 EOD;
-
 $res_manejo_txts = pg_query($db, $qw_manejo_txts);
 
+#-- Resultados por temas y reactivos - LyC --
 #-- Especificaciones de los 5 reactivos con la menor cantidad de aciertos en este eje temático --
 $qw_react_menor_5 = <<<EOD
-SELECT *
-FROM (
-	SELECT 	CONCAT(rlc."cEspecificacion",' Reactivo #',rlc."iNumeroReactivo"), 
-			CASE WHEN rlc."dporcentAlumnsAcertReactivo" = -9999 THEN -0.01 ELSE CAST(rlc."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) END AS Porcentaje
-	FROM hechos."hechosReporteEmsInee" AS h
-	FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-	FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-	FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-	FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
-	WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" = '$iPk_ext' AND h."iFkCicloEscolar" = '$cicloEscolar' AND rlc."cAspectoEvaluacion" = 'Manejo y construcción de la información'
-	AND rlc."dporcentAlumnsAcertReactivo" >= 0
-	ORDER BY rlc."cAspectoEvaluacion",Porcentaje ASC
-	LIMIT 5) AS nTable
-ORDER BY Porcentaje ASC;
+	SELECT *
+	FROM (
+		SELECT CONCAT(rlc."cContenidoTematico",' Reactivo #',rlc."cNumeroReactivo"), CAST(rlc."dPorcentsAlumnsAcertReactivo" AS NUMERIC (5,2)) AS Porcentaje
+		FROM hechos."hechosReporteIneeSecundaria" AS h
+		FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+		FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+		FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
+		WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" = $cicloEscolar AND rlc."cUnidadEvaluacion"= 'Reflexión sobre la lengua'
+		ORDER BY rlc."cUnidadEvaluacion",Porcentaje ASC
+		LIMIT 5) AS nTable
+	ORDER BY Porcentaje DESC;
 EOD;
-
 $res_react_menor_5 = pg_query($db, $qw_react_menor_5);
 
-#---Unidad diagnóstica: Texto argumentativo
-#---- Aspecto de evaluación: Texto argumentativo ----
+#---- Eje temático: Comprensión lectora
 $qw_txt_argumentativo = <<<EOD
-SELECT 	rlc."cAspectoEvaluacion", 
-		CASE WHEN h."dPorcentajeAspecto2LyC" = -9999 THEN -0.01 ELSE h."dPorcentajeAspecto2LyC" END  AS "dPorcentajeAspecto2LyC"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND rlc."cAspectoEvaluacion" ='Texto argumentativo' AND h."iFkCicloEscolar" ='$cicloEscolar'
-AND h."dPorcentajeAspecto2LyC" >= 0
-GROUP BY rlc."cAspectoEvaluacion", h."dPorcentajeAspecto2LyC"
-ORDER BY rlc."cAspectoEvaluacion";
+SELECT rlc."cUnidadEvaluacion", CAST(SUM(rlc."dPorcentsAlumnsAcertReactivo")/COUNT(rlc."dPorcentsAlumnsAcertReactivo") AS NUMERIC (5,2)) AS "porcentaje"
+FROM hechos."hechosReporteIneeSecundaria" AS h
+FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
+WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" = '$cicloEscolar'
+AND rlc."cUnidadEvaluacion" = 'Comprensión lectora'
+GROUP BY rlc."cUnidadEvaluacion";
 EOD;
+
 $res_txt_argumentativo = pg_query($db, $qw_txt_argumentativo);
 
 #-- Especificaciones de los 5 reactivos con la menor cantidad de aciertos en este eje temático --
 $qw_react_menor_5_arg = <<<EOD
 SELECT *
-FROM (SELECT 	CONCAT(rlc."cEspecificacion",' Reactivo #',rlc."iNumeroReactivo"), 
-				CASE WHEN rlc."dporcentAlumnsAcertReactivo" = -9999 THEN -0.01 ELSE CAST(rlc."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND h."iFkCicloEscolar" ='$cicloEscolar' AND rlc."cAspectoEvaluacion" = 'Texto argumentativo'
-AND rlc."dporcentAlumnsAcertReactivo" >= 0
-ORDER BY rlc."cAspectoEvaluacion",Porcentaje ASC
-LIMIT 5) AS nTable
-ORDER BY Porcentaje ASC;
+FROM (
+	SELECT CONCAT(rlc."cContenidoTematico",' Reactivo #',rlc."cNumeroReactivo"), CAST(rlc."dPorcentsAlumnsAcertReactivo" AS NUMERIC (5,2)) AS Porcentaje
+	FROM hechos."hechosReporteIneeSecundaria" AS h
+	FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+	FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+	FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
+	WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar" = $cicloEscolar AND rlc."cUnidadEvaluacion"= 'Comprensión lectora'
+	ORDER BY rlc."cUnidadEvaluacion",Porcentaje ASC
+	LIMIT 5) AS nTable
+ORDER BY Porcentaje DESC;
 EOD;
 $res_react_menor_5_arg = pg_query($db, $qw_react_menor_5_arg);
 
-#Unidad diagnóstica: Texto expositivo
-#---- Aspecto de evaluación: Texto expositivo ----
-$qw_txt_expositivo = <<<EOD
-SELECT 	rlc."cAspectoEvaluacion", 
-		CASE WHEN h."dPorcentajeAspecto3LyC" = -9999 THEN -0.01 ELSE h."dPorcentajeAspecto3LyC" END  AS "dPorcentajeAspecto3LyC"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND rlc."cAspectoEvaluacion" = 'Texto Expositivo' AND h."iFkCicloEscolar" ='$cicloEscolar'
-AND h."dPorcentajeAspecto3LyC" >= 0
-GROUP BY rlc."cAspectoEvaluacion", h."dPorcentajeAspecto3LyC"
-ORDER BY rlc."cAspectoEvaluacion";
-EOD;
-$res_txt_expositivo = pg_query($db, $qw_txt_expositivo);
-
-#Unidad diagnóstica: Texto expositivo
-#-- Especificaciones de los 5 reactivos con la menor cantidad de aciertos en este eje temático --
-$qw_react_menor_5_exp = <<<EOD
-SELECT *
-FROM (SELECT 	CONCAT(rlc."cEspecificacion",' Reactivo #',rlc."iNumeroReactivo"), 
-				CASE WHEN rlc."dporcentAlumnsAcertReactivo" = -9999 THEN -0.01 ELSE CAST(rlc."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" = '$iPk_ext' AND h."iFkCicloEscolar" = '$cicloEscolar' AND rlc."cAspectoEvaluacion" = 'Texto Expositivo'
-AND rlc."dporcentAlumnsAcertReactivo" >= 0
-ORDER BY rlc."cAspectoEvaluacion",Porcentaje ASC
-LIMIT 5) AS nTable
-ORDER BY Porcentaje ASC;
-EOD;
-$res_react_menor_5_exp = pg_query($db, $qw_react_menor_5_exp);
-
-#Unidad diagnóstica: Texto literario
-#---- Aspecto de evaluación: Texto literario ----
-$qw_txt_literario = <<<EOD
-SELECT 	rlc."cAspectoEvaluacion", 
-		CASE WHEN h."dPorcentajeAspecto4LyC" = -9999 THEN -0.01 ELSE h."dPorcentajeAspecto4LyC" END  AS "dPorcentajeAspecto4LyC"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND rlc."cAspectoEvaluacion" = 'Texto Literario' AND h."iFkCicloEscolar" ='$cicloEscolar'
-AND h."dPorcentajeAspecto4LyC" >= 0
-GROUP BY rlc."cAspectoEvaluacion", h."dPorcentajeAspecto4LyC"
-ORDER BY rlc."cAspectoEvaluacion";
-EOD;
-$res_txt_literario = pg_query($db, $qw_txt_literario);
-
-#-- Especificaciones de los 5 reactivos con la menor cantidad de aciertos en este eje temático --
-$qw_react_menor_5_lit = <<<EOD
-SELECT *
-FROM (SELECT CONCAT(rlc."cEspecificacion",' Reactivo #',rlc."iNumeroReactivo"), 
-			 CASE WHEN rlc."dporcentAlumnsAcertReactivo" = -9999 THEN -0.01 ELSE CAST(rlc."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosLyC" AS rlc ON rlc."iPkResultadoLyC" = h."iFkResultadoLyC"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" = '$iPk_ext' AND h."iFkCicloEscolar" = '$cicloEscolar' AND rlc."cAspectoEvaluacion" = 'Texto Literario'
-AND rlc."dporcentAlumnsAcertReactivo" >= 0
-ORDER BY rlc."cAspectoEvaluacion",Porcentaje ASC
-LIMIT 5) AS nTable
-ORDER BY Porcentaje ASC;
-EOD;
-$res_react_menor_5_lit = pg_query($db, $qw_react_menor_5_lit);
 /**
  * Fin de Bloque de consultas para
  * Porcentaje de aciertos en LENGUAJE Y COMUNICACIÓN Unidad diagnóstica
@@ -512,87 +240,48 @@ $res_react_menor_5_lit = pg_query($db, $qw_react_menor_5_lit);
  * Inicio de Bloque de consultas para
  * Porcentaje de aciertos en MATEMÁTICAS Unidad diagnóstica
 */
-#Unidad diagnóstica: Cambios y relaciones
-$qw_cyr = <<<EOD
-SELECT rm."cAspectoEvaluacion",
-	   CASE WHEN h."dPorcentajeAspecto1Mat" = -9999 THEN -0.01 ELSE h."dPorcentajeAspecto1Mat" END  AS "dPorcentajeAspecto1Mat"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" = '$iPk_ext' AND rm."cAspectoEvaluacion" = 'Cambios y relaciones' AND h."iFkCicloEscolar" ='$cicloEscolar'
-AND h."dPorcentajeAspecto1Mat" >= 0
-GROUP BY rm."cAspectoEvaluacion", h."dPorcentajeAspecto1Mat"
-ORDER BY rm."cAspectoEvaluacion";
-EOD;
-$res_cyr = pg_query($db, $qw_cyr);
-
-#-- Especificaciones de los 5 reactivos con la menor cantidad de aciertos en este eje temático --
-$qw_react_menor_5_cyr = <<<EOD
-SELECT *
-FROM (SELECT CONCAT(rm."cEspecificacion",' Reactivo #',rm."iNumeroReactivo"), 
-			 CASE WHEN rm."dporcentAlumnsAcertReactivo" = -9999 THEN -0.01 ELSE CAST(rm."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND rm."cAspectoEvaluacion"= 'Cambios y relaciones'
-AND rm."dporcentAlumnsAcertReactivo" >= 0
-ORDER BY rm."cAspectoEvaluacion",Porcentaje ASC
-LIMIT 5) AS nTable
-ORDER BY Porcentaje ASC;
-EOD;
-$res_react_menor_5_cyr = pg_query($db, $qw_react_menor_5_cyr);
 
 #Unidad diagnóstica: Manejo de la información
 $qw_mdi = <<<EOD
-SELECT rm."cAspectoEvaluacion", 
-	   CASE WHEN h."dPorcentajeAspecto3Mat" = -9999 THEN -0.01 ELSE h."dPorcentajeAspecto3Mat" END  AS "dPorcentajeAspecto3Mat"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND rm."cAspectoEvaluacion" = 'Manejo de la información' AND h."iFkCicloEscolar" ='$cicloEscolar'
-AND h."dPorcentajeAspecto3Mat" >= 0
-GROUP BY rm."cAspectoEvaluacion", h."dPorcentajeAspecto3Mat"
-ORDER BY rm."cAspectoEvaluacion";
+SELECT rm."cUnidadEvaluacion", CAST(SUM(rm."dporcentAlumnsAcertReactivo")/COUNT(rm."dporcentAlumnsAcertReactivo") AS NUMERIC (5,2)) AS "Porcentaje"
+FROM hechos."hechosReporteIneeSecundaria" AS h
+FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
+WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar"= '$cicloEscolar' 
+AND rm."cUnidadEvaluacion"= 'Manejo de la Información'
+GROUP BY rm."cUnidadEvaluacion";
 EOD;
 $res_mdi = pg_query($db, $qw_mdi);
 
 #-- Especificaciones de los 5 reactivos con la menor cantidad de aciertos en este eje temático --
 $qw_react_menor_5_mdi = <<<EOD
 SELECT *
-FROM (SELECT CONCAT(rm."cEspecificacion",' Reactivo #',rm."iNumeroReactivo"),
-			 CASE WHEN rm."dporcentAlumnsAcertReactivo" = -9999 THEN -0.01 ELSE CAST(rm."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND rm."cAspectoEvaluacion"= 'Manejo de la información'
-AND rm."dporcentAlumnsAcertReactivo" >= 0
-ORDER BY rm."cAspectoEvaluacion",Porcentaje ASC
+FROM (
+SELECT CONCAT(rm."cContenidoTematico",' Reactivo #',rm."cNumeroReactivo"), CAST(rm."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) AS "Porcentaje"
+FROM hechos."hechosReporteIneeSecundaria" AS h
+FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
+WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar"= '$cicloEscolar' 
+AND rm."cUnidadEvaluacion"= 'Manejo de la Información'
+ORDER BY rm."cUnidadEvaluacion","Porcentaje" ASC
 LIMIT 5) AS nTable
-ORDER BY Porcentaje ASC;
+ORDER BY "Porcentaje" DESC;
 EOD;
 $res_react_menor_5_mdi = pg_query($db, $qw_react_menor_5_mdi);
 
 #Unidad diagnóstica: Sentido numérico y pensamiento algebraico
+#AQUI
 $qw_snpa = <<<EOD
-SELECT rm."cAspectoEvaluacion",
-	   CASE WHEN h."dPorcentajeAspecto4Mat" = -9999 THEN -0.01 ELSE h."dPorcentajeAspecto4Mat" END  AS "dPorcentajeAspecto4Mat"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND rm."cAspectoEvaluacion" = 'Sentido numérico y pensamiento algebráico' AND h."iFkCicloEscolar" ='$cicloEscolar'
-AND h."dPorcentajeAspecto4Mat" >= 0
-GROUP BY rm."cAspectoEvaluacion", h."dPorcentajeAspecto4Mat"
-ORDER BY rm."cAspectoEvaluacion";
+SELECT rm."cUnidadEvaluacion", CAST(SUM(rm."dporcentAlumnsAcertReactivo")/COUNT(rm."dporcentAlumnsAcertReactivo") AS NUMERIC (5,2)) AS "Porcentaje"
+FROM hechos."hechosReporteIneeSecundaria" AS h
+FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
+WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar"= '$cicloEscolar' 
+AND rm."cUnidadEvaluacion"= 'Sentido numérico y pensamiento algebraico'
+GROUP BY rm."cUnidadEvaluacion";
 EOD;
 $res_snpa = pg_query($db, $qw_snpa);
 
@@ -600,35 +289,31 @@ $res_snpa = pg_query($db, $qw_snpa);
 #-- Especificaciones de los 5 reactivos con la menor cantidad de aciertos en este eje temático --
 $qw_react_menor_5_snpa = <<<EOD
 SELECT *
-FROM (SELECT CONCAT(rm."cEspecificacion",' Reactivo #',rm."iNumeroReactivo"), 
-			 CASE WHEN rm."dporcentAlumnsAcertReactivo" = -9999 THEN -0.01 ELSE CAST(rm."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND rm."cAspectoEvaluacion"='Sentido numérico y pensamiento algebráico'
-AND rm."dporcentAlumnsAcertReactivo" >= 0
-ORDER BY rm."cAspectoEvaluacion",Porcentaje ASC
+FROM (
+SELECT CONCAT(rm."cContenidoTematico",' Reactivo #',rm."cNumeroReactivo"), CAST(rm."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) AS "Porcentaje"
+FROM hechos."hechosReporteIneeSecundaria" AS h
+FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
+WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar"= '$cicloEscolar' 
+AND rm."cUnidadEvaluacion"= 'Sentido numérico y pensamiento algebraico'
+ORDER BY rm."cUnidadEvaluacion","Porcentaje" ASC
 LIMIT 5) AS nTable
-ORDER BY Porcentaje ASC;
+ORDER BY "Porcentaje" DESC;
 EOD;
 $res_react_menor_5_snpa = pg_query($db, $qw_react_menor_5_snpa);
 
 #Unidad diagnóstica: Forma, espacio y medida
 #---- Aspecto de evaluación: Forma, Espacio y Medida ----
 $qw_fem = <<<EOD
-SELECT rm."cAspectoEvaluacion", 
-	   CASE WHEN h."dPorcentajeAspecto2Mat" = -9999 THEN -0.01 ELSE h."dPorcentajeAspecto2Mat" END  AS "dPorcentajeAspecto2Mat"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND rm."cAspectoEvaluacion" ='Forma, Espacio y Medida' AND h."iFkCicloEscolar" ='$cicloEscolar'
-AND h."dPorcentajeAspecto2Mat" >= 0
-GROUP BY rm."cAspectoEvaluacion", h."dPorcentajeAspecto2Mat"
-ORDER BY rm."cAspectoEvaluacion";
+SELECT rm."cUnidadEvaluacion", CAST(SUM(rm."dporcentAlumnsAcertReactivo")/COUNT(rm."dporcentAlumnsAcertReactivo") AS NUMERIC (5,2)) AS "Porcentaje"
+FROM hechos."hechosReporteIneeSecundaria" AS h
+FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
+WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar"= '$cicloEscolar' 
+AND rm."cUnidadEvaluacion"= 'Forma Espacio y Medida'
+GROUP BY rm."cUnidadEvaluacion";
 EOD;
 $res_fem = pg_query($db, $qw_fem);
 
@@ -636,18 +321,17 @@ $res_fem = pg_query($db, $qw_fem);
 #-- Especificaciones de los 5 reactivos con la menor cantidad de aciertos en este eje temático --
 $qw_react_menor_5_fem = <<<EOD
 SELECT *
-FROM (SELECT CONCAT(rm."cEspecificacion",' Reactivo #',rm."iNumeroReactivo"), 
-			 CASE WHEN rm."dporcentAlumnsAcertReactivo" = -9999 THEN -0.01 ELSE CAST(rm."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms" ='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND rm."cAspectoEvaluacion"= 'Forma, Espacio y Medida'
-AND rm."dporcentAlumnsAcertReactivo" >= 0
-ORDER BY rm."cAspectoEvaluacion",Porcentaje ASC
+FROM (
+SELECT CONCAT(rm."cContenidoTematico",' Reactivo #',rm."cNumeroReactivo"), CAST(rm."dporcentAlumnsAcertReactivo" AS NUMERIC (5,2)) AS "Porcentaje"
+FROM hechos."hechosReporteIneeSecundaria" AS h
+FULL OUTER JOIN "dimensionesReporteSecundaria"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
+FULL OUTER JOIN "dimensionesReporteSecundaria"."resultadosMat" AS rm ON rm."iPkResultadoMat" = h."iFkResultadoMat"
+WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND h."iFkCicloEscolar"= '$cicloEscolar' 
+AND rm."cUnidadEvaluacion"= 'Forma Espacio y Medida'
+ORDER BY rm."cUnidadEvaluacion","Porcentaje" ASC
 LIMIT 5) AS nTable
-ORDER BY Porcentaje ASC;
+ORDER BY "Porcentaje" DESC;
 EOD;
 $res_react_menor_5_fem = pg_query($db, $qw_react_menor_5_fem);
 
@@ -655,497 +339,6 @@ $res_react_menor_5_fem = pg_query($db, $qw_react_menor_5_fem);
  * Fin de Bloque de consultas para
  * Porcentaje de aciertos en MATEMÁTICAS Unidad diagnóstica
 */
-
-/**
- * Inicio de Bloque de consultas de
- * Contexto y expectativas de los alumnos
-*/
-
-#---- Trabaja actualmente ----
-$qw_ta = <<<EOD
-SELECT co."cPregunta",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta"=4 AND co."iNumeroEscala"=1
-AND co."dPorcentajeAlumnosEscuela" >= 0
-GROUP BY co."cPregunta",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_ta = pg_query($db, $qw_ta);
-
-#---- Tipo de escuela, por sostenimiento, en que los alumnos estudiaron el último año de secundaria ----
-$qw_tes = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta"=57
-AND co."dPorcentajeAlumnosEscuela" >= 0
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_tes = pg_query($db, $qw_tes);
-
-#---- Tipo de escuela, por tipo de servicio, en que los alumnos estudiaron el último año de secundaria ----
-$qw_tets = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta"=58
-AND co."dPorcentajeAlumnosEscuela" >= 0
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_tets = pg_query($db, $qw_tets);
-
-#---- Nivel máximo de estudios que esperan alcanzar ----
-$qw_nme = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta"=8
-AND co."dPorcentajeAlumnosEscuela" >= 0
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_nme = pg_query($db, $qw_nme);
-
-/**
- * Fin de Bloque de consultas de
- * Contexto y expectativas de los alumnos
-*/
-
-/**
- * Inicio de Bloque de consultas de
- * Entorno escolar
- * Frecuencia con la que el último maestro de español (literatura, lectura, redacción, etcétera) que tuvieron los alumnos realiza o realizaba las siguientes actividades:
-*/
-#---Utiliza ejemplos cercanos a la realidad (vida diaria) para ayudar a su aprendizaje
-$qw_esp_act1 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta"=68
-AND co."dPorcentajeAlumnosEscuela" >= 0
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esp_act1 = pg_query($db, $qw_esp_act1);
-
-#-- Relaciona sus conocimientos previos con los nuevos --
-$qw_esp_act2 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta"=69
-AND co."dPorcentajeAlumnosEscuela" >= 0
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esp_act2 = pg_query($db, $qw_esp_act2);
-
-#-- Estimula la participación de los alumnos, los anima(n) a que expresen sus opiniones, disc (...) --
-$qw_esp_act3 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar'AND co."iNumeroPregunta"=70
-AND co."dPorcentajeAlumnosEscuela" >= 0
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esp_act3 = pg_query($db, $qw_esp_act3);
-
-#-- Ayuda a los alumnos que tienen dificultades con algún tema --
-$qw_esp_act4 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar'AND co."iNumeroPregunta"=71
-AND co."dPorcentajeAlumnosEscuela" >= 0
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esp_act4 = pg_query($db, $qw_esp_act4);
-
-#-- Emplea mapas conceptuales, cuadros sinópticos y esquemas para facilitar el aprendizaje --
-$qw_esp_act5 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar'AND co."iNumeroPregunta"=72
-AND co."dPorcentajeAlumnosEscuela" >= 0
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esp_act5 = pg_query($db, $qw_esp_act5);
-/**
- * Fin de Bloque de consultas de
- * Entorno escolar
-*/
-/**
- * Inicio de Bloque de consultas de
- * Entorno escolar
- * Frecuencia con la que el último maestro de matemáticas que tuvieron los alumnos realiza o realizaba las siguientes actividades:
-*/
-#---Utiliza ejemplos cercanos a la realidad (vida diaria) para ayudar a su aprendizaje
-$qw_mate_act1 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta"=81
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_mate_act1 = pg_query($db, $qw_mate_act1);
-
-#-- Relaciona sus conocimientos previos con los nuevos --
-$qw_mate_act2 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta"=82
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_mate_act2 = pg_query($db, $qw_mate_act2);
-
-#-- Estimula la participación de los alumnos, los anima(n) a que expresen sus opiniones, disc (...) --
-$qw_mate_act3 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar'AND co."iNumeroPregunta"=83
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_mate_act3 = pg_query($db, $qw_mate_act3);
-
-#-- Ayuda a los alumnos que tienen dificultades con algún tema --
-$qw_mate_act4 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar'AND co."iNumeroPregunta"=84
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_mate_act4 = pg_query($db, $qw_mate_act4);
-
-#-- Emplea mapas conceptuales, cuadros sinópticos y esquemas para facilitar el aprendizaje --
-$qw_mate_act5 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar'AND co."iNumeroPregunta"=85
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_mate_act5 = pg_query($db, $qw_mate_act5);
-/**
- * Fin de Bloque de consultas de
- * Entorno escolar Matemáticas
-*/
-
-/**
- * Inicio de Bloque de consultas de
- * Clima y convivencia escolar
-*/
-#---- ¿Consideras a tu escuela un lugar seguro? ----
-$qw_esc_segura = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta"=95
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_segura = pg_query($db, $qw_esc_segura);
-
-
-#---- Opinión de los alumnos sobre las relaciones entre los miembros de la comunidad escolar: ----
-#-- Entre estudiantes --
-$qw_esc_opin1 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta" = 104
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_opin1 = pg_query($db, $qw_esc_opin1);
-
-#---- Opinión de los alumnos sobre las relaciones entre los miembros de la comunidad escolar: ----
-#-- Entre estudiantes y docentes --
-$qw_esc_opin2 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta" = 105
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_opin2 = pg_query($db, $qw_esc_opin2);
-
-#---- Frecuencia con la que los estudiantes de la escuela: ----
-#-- Insultan, ofenden o ridiculizan a sus compañeros --
-$qw_esc_clima_convg4 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta" = 96
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_clima_convg4 = pg_query($db, $qw_esc_clima_convg4);
-
-#---- Frecuencia con la que los estudiantes de la escuela: ----
-#- Destruyen el mobiliario o dañan las instalaciones --
-$qw_esc_clima_convg5 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta" = 97
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_clima_convg5 = pg_query($db, $qw_esc_clima_convg5);
-
-#---- Frecuencia con la que los estudiantes de la escuela: ----
-#-- Llevan armas (navajas, cuchillos, pistolas) --
-$qw_esc_clima_convg6 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta" = 99
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_clima_convg6 = pg_query($db, $qw_esc_clima_convg6);
-
-#---- Frecuencia con la que los estudiantes de la escuela: ----
-#-- Se roban las pertenencias de los estudiantes --
-$qw_esc_clima_convg7 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta" = 100
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_clima_convg7 = pg_query($db, $qw_esc_clima_convg7);
-
-#---- Frecuencia con la que los estudiantes de la escuela: ----
-#-- Lesionan o lastiman a otros estudiantes --
-$qw_esc_clima_convg8 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta" = 102
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_clima_convg8 = pg_query($db, $qw_esc_clima_convg8);
-
-#---- Frecuencia con la que los estudiantes de la escuela: ----
-#-- Golpean o empujan a otros estudiantes --
-$qw_esc_clima_convg9 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta" = 101
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_clima_convg9 = pg_query($db, $qw_esc_clima_convg9);
-
-#---- Frecuencia con la que los estudiantes de la escuela: ----
-#-- Consumen droga --
-$qw_esc_clima_convg10 = <<<EOD
-SELECT co."cPregunta",co."cEscala",CASE WHEN co."dPorcentajeAlumnosEscuela" = -9999 THEN -0.01 ELSE co."dPorcentajeAlumnosEscuela" END AS "dPorcentajeAlumnosEscuela"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-FULL OUTER JOIN "dimensionesPlaneaEms"."escalasContexto" AS co ON co."iPkEscalaContexto" = h."iFkEscalaContexto"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar' AND co."iNumeroPregunta" = 98
-GROUP BY co."cPregunta",co."cEscala",co."dPorcentajeAlumnosEscuela",co."iNumeroEscala"
-ORDER BY co."iNumeroEscala";
-EOD;
-$res_esc_clima_convg10 = pg_query($db, $qw_esc_clima_convg10);
-/**
- * Fin de Bloque de consultas de
- * Clima y convivencia escolar
-*/
-
-/**
- * Inicio de Bloque de consultas de Estadistica básica pro zona escolar
- * 
-*/
-
-#---- Matrícula escolar  Gráfica----
-$qw_matricula_escolar = <<<EOD
-WITH ntable AS(
-SELECT y."Ciclo Escolar", u.* 
-FROM(
-SELECT ce."cCicloEscolar" AS "Ciclo Escolar",
-    CASE WHEN h."iMatriculaPrimerGrado" = -9999 THEN -0.01 ELSE h."iMatriculaPrimerGrado" END  AS "1ro", 
-    CASE WHEN h."iMatriculaSegundoGrado" =-9999 THEN -0.01 ELSE h."iMatriculaSegundoGrado" END AS "2do", 
-    CASE WHEN h."iMatriculaTercerGrado" = -9999 THEN -0.01 ELSE h."iMatriculaTercerGrado" END  AS "3ro",
-	CASE WHEN h."iMatriculaCuartoGrado" = -9999 THEN -0.01 ELSE h."iMatriculaCuartoGrado" END  AS "4to",
-	CASE WHEN h."iMatriculaQuintoGrado" = -9999 THEN -0.01 ELSE h."iMatriculaQuintoGrado" END  AS "5to",
-	CASE WHEN h."iMatriculaTotal"		= -9999 THEN -0.01 ELSE h."iMatriculaTotal" END AS "Total"
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo"  AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."ciclosEscolares" AS ce ON ce."iPkCicloEscolar" = h."iFkCicloEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms"  AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND ce."iPkCicloEscolar" IN (17,18,19)
-ORDER BY ce."cCicloEscolar") AS y
-CROSS JOIN UNNEST(
-array['1ro','2do','3ro','4to','5to','Total'],
-array[y."1ro",y."2do",y."3ro",y."4to",y."5to",y."Total"]
-)WITH ORDINALITY AS u(grado,valor,sort_no)
-)
-SELECT grado AS "Grado",
-	max(CASE WHEN "Ciclo Escolar"='2014/2015' THEN valor END) AS "2014/2015",
-	max(CASE WHEN "Ciclo Escolar"='2015/2016' THEN valor END) AS "2015/2016",
-	max(CASE WHEN "Ciclo Escolar"='2016/2017' THEN valor END) AS "2016/2017"
-FROM ntable
-GROUP BY grado,sort_no
-ORDER BY sort_no;
-EOD;
-$res_matricula_escolar = pg_query($db, $qw_matricula_escolar);
-
-#---- Matriculación oportuna ----
-$qw_matricula_oportuna = <<<EOD
-SELECT CASE WHEN h."dTasaMatriculacionOportuna" = -9999 THEN -0.01 ELSE CAST(h."dTasaMatriculacionOportuna" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar';
-EOD;
-$res_matricula_oportuna = pg_query($db, $qw_matricula_oportuna);
-
-
-#---- Alumnos en edad idónea y extraedead ligera ----
-$qw_matricula_ido_ext = <<<EOD
-SELECT CASE WHEN h."dPorcentajeAlmnsRegularNoExtraEdad" = -9999 THEN -0.01 ELSE CAST(h."dPorcentajeAlmnsRegularNoExtraEdad" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar';
-EOD;
-$res_matricula_ido_ext = pg_query($db, $qw_matricula_ido_ext);
-
-#---- Aprobación al final del ciclo escolar ----
-$qw_matricula_apro_ciclo = <<<EOD
-SELECT CASE WHEN h."dTasaAprobacion" = -9999 THEN -0.01 ELSE CAST(h."dTasaAprobacion" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar';
-EOD;
-$res_matricula_apro_ciclo = pg_query($db, $qw_matricula_apro_ciclo);
-
-#---- Aprobación despues del periodo de regularización ----
-$qw_matricula_apro_reg = <<<EOD
-SELECT CASE WHEN h."dTasaAprobacionRegularizacion" = -9999 THEN -0.01 ELSE CAST(h."dTasaAprobacionRegularizacion" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar';
-EOD;
-$res_matricula_apro_reg = pg_query($db, $qw_matricula_apro_reg);
-
-#---- Retención intracurricular ----
-$qw_matricula_reten = <<<EOD
-SELECT CASE WHEN h."dTasaRetencion" = -9999 THEN -0.01 ELSE CAST(h."dTasaRetencion" AS NUMERIC (5,2)) END AS Porcentaje
-FROM hechos."hechosReporteEmsInee" AS h
-FULL OUTER JOIN "dimensionesPlaneaEms"."centrosTrabajo" AS ct ON ct."iPkCentroTrabajo" = h."iFkCentroTrabajo"
-FULL OUTER JOIN "dimensionesPlaneaEms"."turnosEscolares" AS te ON te."iPkTurnoEscolar" = h."iFkTurnoEscolar"
-FULL OUTER JOIN "dimensionesPlaneaEms"."extensionesEms" AS ex ON ex."iPkExtensionEms" = h."iFkExtensionEms"
-WHERE ct."cClaveCentroTrabajo"='$escuela' AND te."iPkTurnoEscolar"='$turno' AND ex."iPkExtensionEms"='$iPk_ext' AND h."iFkCicloEscolar"='$cicloEscolar';
-EOD;
-$res_matricula_reten = pg_query($db, $qw_matricula_reten);
-/**
- * Fin de Bloque de consultas de Estadistica básica pro zona escolar
- * 
-*/
-
-
 
   	}else{
 			echo "El criterio de búsqueda no es válido se debe concatenar CCT y TURNO";
@@ -1421,21 +614,13 @@ google.charts.load('current', {packages: ['corechart']});
 google.charts.load('current', {'packages':['bar']});
 google.charts.load('current', {'packages':['table']});
 google.charts.setOnLoadCallback(drawChart);
-google.charts.setOnLoadCallback(drawTable);
+//google.charts.setOnLoadCallback(drawTable);
 
 
 function drawChart() {
 
 /*INICIO
-* Bloque para generar grafica del comparativo LyC con Matemáticas
-*/
-
-/*FIN
-* Bloque para generar grafica del comparativo LyC con Matemáticas
-*/
-
-/*INICIO
-* Bloque para generar grafica del Comparativo con escuelas promedio de la entidad y del país Lenguaje y Comunicacion
+* Bloque para generar gráfica de PLANEA Lenguaje y Comunicacion
 */
 
 var data_comp_LyC = google.visualization.arrayToDataTable([
@@ -1447,7 +632,7 @@ var data_comp_LyC = google.visualization.arrayToDataTable([
 					if($row_comp_lyc['II_Elemental']<0){$txtstyle_II="Dato no disponible"; $val_II=0;}else{$txtstyle_II=$row_comp_lyc['II_Elemental']."%"; $val_II=$row_comp_lyc['II_Elemental'];}
 					if($row_comp_lyc['III_Bueno']<0){$txtstyle_III="Dato no disponible"; $val_III=0;}else{$txtstyle_III=$row_comp_lyc['III_Bueno']."%"; $val_III=$row_comp_lyc['III_Bueno'];}
 					if($row_comp_lyc['IV_Excelente']<0){$txtstyle_IV="Dato no disponible"; $val_IV=0;}else{$txtstyle_IV=$row_comp_lyc['IV_Excelente']."%"; $val_IV=$row_comp_lyc['IV_Excelente'];}
-					echo "['".$row_comp_lyc['resultado']."',".
+					echo "['".$row_comp_lyc['CicloEscolar']."',".
 					$row_comp_lyc['I_Insuficiente']*(-1).",'".$txtstyle_I."',".$row_comp_lyc['II_Elemental'].",'".$txtstyle_II."',".
 					$row_comp_lyc['III_Bueno'].",'".$txtstyle_III."',".$row_comp_lyc['IV_Excelente'].",'".$txtstyle_IV."'],";
 				}
@@ -1484,7 +669,7 @@ container5.innerHTML = '<img src="' + chart5.getImageURI() + '">';
 chart5.draw(data_comp_LyC, options_comp_nacional);
 
 /*FIN
-* Bloque para generar grafica del Comparativo con escuelas promedio de la entidad y del país Lenguaje y Comunicacion
+* Bloque para generar gráfica de PLANEA Lenguaje y Comunicacion
 */
 
 /*INICIO
@@ -1500,7 +685,7 @@ var data_comp_mat = google.visualization.arrayToDataTable([
 					if($row_comp_mat['II_Elemental']<0){$txtstyle_II="Dato no disponible"; $val_II=0;}else{$txtstyle_II=$row_comp_mat['II_Elemental']."%"; $val_II=$row_comp_mat['II_Elemental'];}
 					if($row_comp_mat['III_Bueno']<0){$txtstyle_III="Dato no disponible"; $val_III=0;}else{$txtstyle_III=$row_comp_mat['III_Bueno']."%"; $val_III=$row_comp_mat['III_Bueno'];}
 					if($row_comp_mat['IV_Excelente']<0){$txtstyle_IV="Dato no disponible"; $val_IV=0;}else{$txtstyle_IV=$row_comp_mat['IV_Excelente']."%"; $val_IV=$row_comp_mat['IV_Excelente'];}
-					echo "['".$row_comp_mat['resultado']."',".
+					echo "['".$row_comp_mat['CicloEscolar']."',".
 					$val_I*(-1).",'".$txtstyle_I."',".$val_II.",'".$txtstyle_II."',".
 					$val_III.",'".$txtstyle_III."',".$val_IV.",'".$txtstyle_IV."'],";
 				}
@@ -1599,15 +784,15 @@ var data_const_txts = google.visualization.arrayToDataTable([
 	['Eje', 'Nombre', {role: 'annotation'}, { role: 'style' }],
 	<?php
 		while($row_manejo_txts = pg_fetch_assoc($res_manejo_txts)){
-			if($row_manejo_txts['dPorcentajeAspecto1LyC']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_manejo_txts['dPorcentajeAspecto1LyC']."%";}
-			if($row_manejo_txts['dPorcentajeAspecto1LyC']>=0 && $row_manejo_txts['dPorcentajeAspecto1LyC']<=40){
+			if($row_manejo_txts['porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_manejo_txts['porcentaje']."%";}
+			if($row_manejo_txts['porcentaje']>=0 && $row_manejo_txts['porcentaje']<=40){
 				$color = "#FB4F57";
-			}elseif($row_manejo_txts['dPorcentajeAspecto1LyC']>40 && $row_manejo_txts['dPorcentajeAspecto1LyC']<=60){
+			}elseif($row_manejo_txts['porcentaje']>40 && $row_manejo_txts['porcentaje']<=60){
 				$color = "#FDD16C";
 			}else{
 				$color = "#6ACB9C";
 			}
-			echo "['".$row_manejo_txts['cAspectoEvaluacion']."',".$row_manejo_txts['dPorcentajeAspecto1LyC'].",'".$txtstyle."','".$color."'],";
+			echo "['".$row_manejo_txts['cUnidadEvaluacion']."',".$row_manejo_txts['porcentaje'].",'".$txtstyle."','".$color."'],";
 		}		
 	?>
 ]);
@@ -1714,15 +899,15 @@ var data_txt_argumentativo = google.visualization.arrayToDataTable([
 	['Eje', 'Nombre', {role: 'annotation'}, { role: 'style' }],
 	<?php
 		while($row_txt_argumentativo = pg_fetch_assoc($res_txt_argumentativo)){
-			if($row_txt_argumentativo['dPorcentajeAspecto2LyC']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_txt_argumentativo['dPorcentajeAspecto2LyC']."%";}
-			if($row_txt_argumentativo['dPorcentajeAspecto2LyC']>0 &&$row_txt_argumentativo['dPorcentajeAspecto2LyC']<=40){
+			if($row_txt_argumentativo['porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_txt_argumentativo['porcentaje']."%";}
+			if($row_txt_argumentativo['porcentaje']>0 &&$row_txt_argumentativo['porcentaje']<=40){
 				$color = "#FB4F57";
-			}elseif($row_txt_argumentativo['dPorcentajeAspecto2LyC']>40 && $row_txt_argumentativo['dPorcentajeAspecto2LyC']<=60){
+			}elseif($row_txt_argumentativo['porcentaje']>40 && $row_txt_argumentativo['porcentaje']<=60){
 				$color = "#FDD16C";
 			}else{
 				$color = "#6ACB9C";
 			}
-			echo "['".$row_txt_argumentativo['cAspectoEvaluacion']."',".$row_txt_argumentativo['dPorcentajeAspecto2LyC'].",'".$txtstyle."','".$color."'],";
+			echo "['".$row_txt_argumentativo['cUnidadEvaluacion']."',".$row_txt_argumentativo['porcentaje'].",'".$txtstyle."','".$color."'],";
 		}		
 	?>
 ]);
@@ -1831,15 +1016,15 @@ var data_mdi = google.visualization.arrayToDataTable([
 	['Eje', 'Nombre', {role: 'annotation'}, { role: 'style' }],
 	<?php
 		while($row_mdi = pg_fetch_assoc($res_mdi)){
-			if($row_mdi['dPorcentajeAspecto3Mat']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_mdi['dPorcentajeAspecto3Mat']."%";}
-			if($row_mdi['dPorcentajeAspecto3Mat']>0 && $row_mdi['dPorcentajeAspecto3Mat']<=40){
+			if($row_mdi['Porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_mdi['Porcentaje']."%";}
+			if($row_mdi['Porcentaje']>0 && $row_mdi['Porcentaje']<=40){
 				$color = "#FB4F57";
-			}elseif($row_mdi['dPorcentajeAspecto3Mat']>40 && $row_mdi['dPorcentajeAspecto3Mat']<=60){
+			}elseif($row_mdi['Porcentaje']>40 && $row_mdi['Porcentaje']<=60){
 				$color = "#FDD16C";
 			}else{
 				$color = "#6ACB9C";
 			}
-			echo "['".$row_mdi['cAspectoEvaluacion']."',".$row_mdi['dPorcentajeAspecto3Mat'].",'".$txtstyle."','".$color."'],";
+			echo "['".$row_mdi['cUnidadEvaluacion']."',".$row_mdi['Porcentaje'].",'".$txtstyle."','".$color."'],";
 		}		
 	?>
 ]);
@@ -1889,15 +1074,15 @@ var data_react_menor_5_mdi = google.visualization.arrayToDataTable([
 	['Eje', 'Nombre', {role: 'annotation'}, { role: 'style' }],
 	<?php
 		while($row_react_menor_5_mdi = pg_fetch_assoc($res_react_menor_5_mdi)){
-			if($row_react_menor_5_mdi['porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_react_menor_5_mdi['porcentaje']."%";}
-			if($row_react_menor_5_mdi['porcentaje']>0 && $row_react_menor_5_mdi['porcentaje']<=40){
+			if($row_react_menor_5_mdi['Porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_react_menor_5_mdi['Porcentaje']."%";}
+			if($row_react_menor_5_mdi['Porcentaje']>0 && $row_react_menor_5_mdi['Porcentaje']<=40){
 				$color = "#FB4F57";
-			}elseif($row_react_menor_5_mdi['porcentaje']>40 && $row_react_menor_5_mdi['porcentaje']<=60){
+			}elseif($row_react_menor_5_mdi['Porcentaje']>40 && $row_react_menor_5_mdi['Porcentaje']<=60){
 				$color = "#FDD16C";
 			}else{
 				$color = "#6ACB9C";
 			}
-			echo "['".$row_react_menor_5_mdi['concat']."',".$row_react_menor_5_mdi['porcentaje'].",'".$txtstyle."','".$color."'],";
+			echo "['".$row_react_menor_5_mdi['concat']."',".$row_react_menor_5_mdi['Porcentaje'].",'".$txtstyle."','".$color."'],";
 		}		
 	?>
 ]);
@@ -1947,15 +1132,15 @@ var data_snpa = google.visualization.arrayToDataTable([
 	['Eje', 'Nombre', {role: 'annotation'}, { role: 'style' }],
 	<?php
 		while($row_snpa = pg_fetch_assoc($res_snpa)){
-			if($row_snpa['dPorcentajeAspecto4Mat']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_snpa['dPorcentajeAspecto4Mat']."%";}
-			if($row_snpa['dPorcentajeAspecto4Mat']>0 && $row_snpa['dPorcentajeAspecto4Mat']<=40){
+			if($row_snpa['Porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_snpa['Porcentaje']."%";}
+			if($row_snpa['Porcentaje']>0 && $row_snpa['Porcentaje']<=40){
 				$color = "#FB4F57";
-			}elseif($row_snpa['dPorcentajeAspecto4Mat']>40 && $row_snpa['dPorcentajeAspecto4Mat']<=60){
+			}elseif($row_snpa['Porcentaje']>40 && $row_snpa['Porcentaje']<=60){
 				$color = "#FDD16C";
 			}else{
 				$color = "#6ACB9C";
 			}
-			echo "['".$row_snpa['cAspectoEvaluacion']."',".$row_snpa['dPorcentajeAspecto4Mat'].",'".$txtstyle."','".$color."'],";
+			echo "['".$row_snpa['cUnidadEvaluacion']."',".$row_snpa['Porcentaje'].",'".$txtstyle."','".$color."'],";
 		}		
 	?>
 ]);
@@ -2005,15 +1190,15 @@ var data_react_menor_5_snpa = google.visualization.arrayToDataTable([
 	['Eje', 'Nombre', {role: 'annotation'}, { role: 'style' }],
 	<?php
 		while($row_react_menor_5_snpa = pg_fetch_assoc($res_react_menor_5_snpa)){
-			if($row_react_menor_5_snpa['porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_react_menor_5_snpa['porcentaje']."%";}
-			if($row_react_menor_5_snpa['porcentaje']>0 && $row_react_menor_5_snpa['porcentaje']<=40){
+			if($row_react_menor_5_snpa['Porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_react_menor_5_snpa['Porcentaje']."%";}
+			if($row_react_menor_5_snpa['Porcentaje']>0 && $row_react_menor_5_snpa['Porcentaje']<=40){
 				$color = "#FB4F57";
-			}elseif($row_react_menor_5_snpa['porcentaje']>40 && $row_react_menor_5_snpa['porcentaje']<=60){
+			}elseif($row_react_menor_5_snpa['Porcentaje']>40 && $row_react_menor_5_snpa['Porcentaje']<=60){
 				$color = "#FDD16C";
 			}else{
 				$color = "#6ACB9C";
 			}
-			echo "['".$row_react_menor_5_snpa['concat']."',".$row_react_menor_5_snpa['porcentaje'].",'".$txtstyle."','".$color."'],";
+			echo "['".$row_react_menor_5_snpa['concat']."',".$row_react_menor_5_snpa['Porcentaje'].",'".$txtstyle."','".$color."'],";
 		}		
 	?>
 ]);
@@ -2063,15 +1248,15 @@ var data_fem = google.visualization.arrayToDataTable([
 	['Eje', 'Nombre', {role: 'annotation'}, { role: 'style' }],
 	<?php
 		while($row_fem = pg_fetch_assoc($res_fem)){
-			if($row_fem['dPorcentajeAspecto2Mat']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_fem['dPorcentajeAspecto2Mat']."%";}
-			if($row_fem['dPorcentajeAspecto2Mat']>0 && $row_fem['dPorcentajeAspecto2Mat']<=40){
+			if($row_fem['Porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_fem['Porcentaje']."%";}
+			if($row_fem['Porcentaje']>0 && $row_fem['Porcentaje']<=40){
 				$color = "#FB4F57";
-			}elseif($row_fem['dPorcentajeAspecto2Mat']>40 && $row_fem['dPorcentajeAspecto2Mat']<=60){
+			}elseif($row_fem['Porcentaje']>40 && $row_fem['Porcentaje']<=60){
 				$color = "#FDD16C";
 			}else{
 				$color = "#6ACB9C";
 			}
-			echo "['".$row_fem['cAspectoEvaluacion']."',".$row_fem['dPorcentajeAspecto2Mat'].",'".$txtstyle."','".$color."'],";
+			echo "['".$row_fem['cUnidadEvaluacion']."',".$row_fem['Porcentaje'].",'".$txtstyle."','".$color."'],";
 		}		
 	?>
 ]);
@@ -2109,6 +1294,7 @@ chart_fem.draw(data_fem, options_fem);
 	document.getElementById('container_txt_fem').style.display = "none";
 	document.getElementById('txt_fem').innerHTML = '<div style="margin-left: auto; margin-right: auto; height: 70; width: 900 ">Dato No Disponible</div>';
 <?php } ?>
+
 /*FIN
 * Unidad diagnóstica: Sentido numérico y pensamiento algebraico
 */
@@ -2121,15 +1307,15 @@ var data_react_menor_5_fem = google.visualization.arrayToDataTable([
 	['Eje', 'Nombre', {role: 'annotation'}, { role: 'style' }],
 	<?php
 		while($row_react_menor_5_fem = pg_fetch_assoc($res_react_menor_5_fem)){
-			if($row_react_menor_5_fem['porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_react_menor_5_fem['porcentaje']."%";}
-			if($row_react_menor_5_fem['porcentaje']>0 && $row_react_menor_5_fem['porcentaje']<=40){
+			if($row_react_menor_5_fem['Porcentaje']<0){$txtstyle="Dato no disponible";}else{$txtstyle=$row_react_menor_5_fem['Porcentaje']."%";}
+			if($row_react_menor_5_fem['Porcentaje']>0 && $row_react_menor_5_fem['Porcentaje']<=40){
 				$color = "#FB4F57";
-			}elseif($row_react_menor_5_fem['porcentaje']>40 && $row_react_menor_5_fem['porcentaje']<=60){
+			}elseif($row_react_menor_5_fem['Porcentaje']>40 && $row_react_menor_5_fem['Porcentaje']<=60){
 				$color = "#FDD16C";
 			}else{
 				$color = "#6ACB9C";
 			}
-			echo "['".$row_react_menor_5_fem['concat']."',".$row_react_menor_5_fem['porcentaje'].",'".$txtstyle."','".$color."'],";
+			echo "['".$row_react_menor_5_fem['concat']."',".$row_react_menor_5_fem['Porcentaje'].",'".$txtstyle."','".$color."'],";
 		}		
 	?>
 ]);
@@ -2166,7 +1352,7 @@ chart_react_menor_5_fem.draw(data_react_menor_5_fem, options_react_menor_5_fem);
 <?php if (pg_num_rows ( $res_react_menor_5_fem ) == 0){ ?>
 	document.getElementById('container_react_menor_5_fem').style.display = "none";
 	document.getElementById('react_menor_5_fem').innerHTML = '<div style="margin-left: auto; margin-right: auto; height: 200; width: 1100 ">Dato No Disponible</div>';
-	document.getElementById('matematicas').style.display = "none";
+	//document.getElementById('matematicas').style.display = "none";
 <?php } ?>
 /*FIN
 * Especificaciones de los 5 reactivos con la menor cantidad de aciertos en este eje temático
@@ -2201,7 +1387,7 @@ chart_react_menor_5_fem.draw(data_react_menor_5_fem, options_react_menor_5_fem);
 								Nivel de:
 							</td>
 							<td class="td_data" style="text-align: left;<?php if(strlen($nivel)>55){echo 'font-size: 12px;';}?>">
-								<?php echo $nivel;?>
+								<?php echo $gdo_marginacion;?>
 							</td>
 						</tr>
 						<tr>
@@ -2235,7 +1421,7 @@ chart_react_menor_5_fem.draw(data_react_menor_5_fem, options_react_menor_5_fem);
 								Zona:
 							</td>
 							<td class="td_data">
-								<?php echo $zona;?>
+								<?php echo $cve_zona_e;?>
 							</td>
 						</tr>
 						<tr>
