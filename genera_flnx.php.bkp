@@ -6,7 +6,6 @@
 	if(is_array($arrv)){
 		$vent = $arrv['vent'];
 		$tipo = $arrv['tipo'];
-		$ciclo = 21;
 		#echo "V: $vent CMD: $tipo<br/>";
 		switch($tipo){
 			case 1:
@@ -29,37 +28,31 @@
 				
 				#Se obtiene el numero de pdf's por generar.
 				$qw_cont = <<<EOD
-				SELECT count(DISTINCT ("cClaveCentroTrabajo")) as regs
+				SELECT count(*) as regs
 				FROM "reportesEscuelaBatch"."bitacoraReportesEscuelas"
 				WHERE "cClaveEntidadFederativa" = '$vent'
-				AND "iFkCicloEscolar" = $ciclo
 				AND "iGenerado" is NULL
 EOD;
 				$res_cont = pg_query($db,$qw_cont);
 				#numero de reportes pdf por generar
 				$reg = pg_fetch_assoc($res_cont);
-				$num_regs = $reg['regs'];
-				echo "'\n'consulta numero registros: ".$qw_cont;
-				echo "'\n'resultado consulta: ".$res_cont;
-				echo "'\n'registro: ".$reg['regs']; 
-				echo "'\n'numero de registros: ".$num_regs;
+				$num_regs = $reg['regs']; 
+				echo "numero de registros: ".$num_regs;
 
 				#$qw = "select ident, ESCUELA, NIVEL, CLAVE_RENAPO, CV_CCT, GENERADO, count(*) as faltan from escuelas_dgiai where CLAVE_RENAPO = '$vent' and generado = 0 order by ident asc limit 1";
 				##Consulta para probar el proceso batch
 				##se va a generar una tabla para registrar los reportes generados.
 				##esta tabla estará en la misma base de datos, pero en esquema diferente
 					$qw = <<<EOD
-					SELECT DISTINCT ON ("cClaveCentroTrabajo") "cClaveCentroTrabajo", "iPkBitacoraReporteEscuela", "iFkEntidadFederativa",
-					"iFkCicloEscolar",
+					SELECT "iPkBitacoraReporteEscuela", "iFkEntidadFederativa", "iFkCicloEscolar",
 					"iFkNivelEscolar", "iFkTurnoEscolar", "iFkExtensionEmsEscolar",
-					"cCiloEscolar", "cNombreNivelEscolar",
+					"cClaveCentroTrabajo", "cCiloEscolar", "cNombreNivelEscolar",
 					"cNombreExtensionEscolar", "cClaveEntidadFederativa", "cAbreviaturaEntidadFederativa",
 					"cClaveRENAPO", "iGenerado", "cNombreReporte", "tFechaImpresion"
 					FROM "reportesEscuelaBatch"."bitacoraReportesEscuelas"
 					WHERE "cClaveEntidadFederativa" = '$vent'
-					AND "iFkCicloEscolar" = $ciclo
 					and "iGenerado" is NULL
-					order by "cClaveCentroTrabajo" asc limit 1
+					order by "iPkBitacoraReporteEscuela" asc limit 1
 EOD;
 
 				echo "V: $vent<br/>";
@@ -72,15 +65,14 @@ EOD;
 				$cve_ent = $vent;
 				$ident = $row['cClaveEntidadFederativa'];
 				#$faltan = $row['faltan'];
-				$nivel = "SEC";
+				$nivel = "ems";
 				$cct_turno = $row['iFkTurnoEscolar'];
 				$extension = $row['iFkExtensionEmsEscolar'];
 				$ciclo = $row['iFkCicloEscolar'];
 				$cveRenapo = $row['cClaveRENAPO'];
-				$par_nivel = "$clavecct"; # La clavecct ya tiene incluido el turno
-				#$par_nivel = "$clavecct"."$cct_turno";
+				$par_ems = "$clavecct"."$cct_turno"."$extension";
 
-				echo "parametro: ".$par_nivel;
+				echo "parametro: ".$par_ems;
 				#if($nivel == null or $nivel == "PRIM"){
 				#	$nivel = "PRIM";
 				#}elseif($nivel == "SEC"){
@@ -109,8 +101,8 @@ EOD;
 				#	echo "F: $faltan<br/>";
 				#}
 				$randy = rand();
-				shell_exec("google-chrome --headless --dump-dom http://localhost:9090/rep_sec_2020/test.php?va=$par_nivel > ./salida/$randy$par_nivel.php");
-				$html= file_get_contents("./salida/$randy$par_nivel.php");
+				shell_exec("google-chrome --headless --dump-dom http://localhost:9090/reportes_ems/test.php?va=$par_ems > ./salida/$randy$par_ems.php");
+				$html= file_get_contents("./salida/$randy$par_ems.php");
 				$mpdf = new mPDF ('c', 'Letter');
 				$mpdf->SetHTMLFooter ('
 				<div style="font-size: 13px; font-weight: bold; text-align: right; color: #333e75; vertical-align: bottom;padding-right: 50px;">
@@ -122,10 +114,10 @@ EOD;
 			);
 				$mpdf->img_dpi = 96;
 				$mpdf->writeHTML($html);
-				$name = "$cveRenapo"."_".$par_nivel.".pdf";
-				$path_name ="./salida/sec/$name";
+				$name = "$cveRenapo"."_".$par_ems.".pdf";
+				$path_name ="./salida/ems/$name";
 				echo "nombre: ".$path_name;
-				shell_exec("rm ./salida/$randy$par_nivel.php");
+				shell_exec("rm ./salida/$randy$par_ems.php");
 				$mpdf->Output("$path_name", 'F');
 				echo " OK - Faltan: $num_regs<br/>";
 				
@@ -144,7 +136,7 @@ EOD;
 					# es para redireccionar la salida del comendo
 					# y no tener que esperar a la respuesta del comando.
 					# asi no se llena de procesos iniciados y se termina el proceso actual que realiza el llamado a la ejecución del sigueinte proceso.
-					shell_exec("curl localhost:9090/rep_sec_2020/genera_flnx.php?va=$vent > /dev/null 2>&1 &");
+					shell_exec("curl localhost:9090/reportes_ems/genera_flnx.php?va=$vent > /dev/null 2>&1 &");
 				}else{
 					echo "Generación de PDF terminada";
 				}
