@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/lib/pdf/vendor/autoload.php';
+require_once '/tmp/vendor/autoload.php';
 include("./lib/escuelaslib.php");
 $vin = $_REQUEST['va'];
 $arrv = valida_variable(strtoupper(escapa($vin)));
